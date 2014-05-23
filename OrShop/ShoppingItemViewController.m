@@ -9,7 +9,7 @@
 #import "ShoppingItemViewController.h"
 #import "AutoCompleteView.h"
 
-@interface ShoppingItemViewController () <UITextFieldDelegate, UIAlertViewDelegate, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate>
+@interface ShoppingItemViewController () <UITextFieldDelegate, UIAlertViewDelegate, UIGestureRecognizerDelegate, AutoCompleteViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 @property (weak, nonatomic) IBOutlet UIView *subView;
@@ -24,7 +24,6 @@
 @property (strong, nonatomic) UITapGestureRecognizer *tapToDismissKeyboard;
 @property (strong, nonatomic) UIAlertView *deleteAlert;
 @property (strong, nonatomic) AutoCompleteView *autoCompleteView;
-@property (strong, nonatomic) NSArray *autoCompleteDataSource;
 @property (strong, nonatomic) UITextField *textFieldBeingEdited;
 
 @end
@@ -131,7 +130,7 @@
     return YES;
 }
 
-- (void)moveToNewStore
+- (void)moveToNewStore //-----Could move to DataSourceController-----
 {
     NSString *oldStoreName = self.item.preferredStore;
     NSString *newStoreName = self.preferredStoreTextField.text;
@@ -177,7 +176,6 @@
         //        if ([self.preferredStoreTextField.text isEqualToString:@""]) self.item.preferredStore = @"(no store)";
         //            else self.item.preferredStore = self.preferredStoreTextField.text;
         
-        
         self.item.preferredStore = self.preferredStoreTextField.text;
         self.item.name = self.itemNameTextField.text;
         self.item.amountNeeded = self.amountNeededStepper.value;
@@ -210,16 +208,12 @@
 
 - (IBAction)itemNameTextFieldEditingChanged:(UITextField *)sender
 {
-    self.autoCompleteDataSource = [self arrayWithAutoCompleteItemsFromList:self.dataSource.itemNamesUsed usingString:sender.text];
-    [self setAutoCompleteHeight];
-    [self.autoCompleteView.tableView reloadData];
+    [self.autoCompleteView reloadDataSourceUsingArray:self.dataSource.itemNamesUsed andString:sender.text];
 }
 
 - (IBAction)preferredStoreTextFieldEditingChanged:(UITextField *)sender
 {
-    self.autoCompleteDataSource = [self arrayWithAutoCompleteItemsFromList:self.dataSource.storeNamesUsed usingString:sender.text];
-    [self setAutoCompleteHeight];
-    [self.autoCompleteView.tableView reloadData];
+    [self.autoCompleteView reloadDataSourceUsingArray:self.dataSource.storeNamesUsed andString:sender.text];
 }
 
 - (IBAction)amountNeededTextField:(UITextField *)sender {
@@ -247,8 +241,6 @@
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
-//    NSLog(@"touch.view: %@", [touch.view description]);
-    
     return (touch.view == self.subView) ? YES : NO;
 }
 
@@ -311,131 +303,26 @@
 }
 
 
-#pragma mark - Xib's AutoCompleteView.xib Controller
+#pragma mark - AutoCompleteView Create, Destroy, and Delegate
 
 
 - (void)createAutoCompleteDropDownForTextField:(UITextField *)textField
 {
-    CGRect autoCompleteFrame = CGRectMake(textField.frame.origin.x,
-                                          textField.frame.origin.y + textField.frame.size.height,
-                                          textField.frame.size.width,
-                                          0);
-    
-    self.autoCompleteView = [[AutoCompleteView alloc] initWithFrame:autoCompleteFrame];
-    self.autoCompleteView.tableView.dataSource = self;
-    self.autoCompleteView.tableView.delegate = self;
-    
+    self.autoCompleteView = [[AutoCompleteView alloc] initWithTextField:textField];
+    self.autoCompleteView.delegate = self;
     [self.subView addSubview:self.autoCompleteView];
-    
-    self.autoCompleteView.tableView.exclusiveTouch = YES;
 }
 
 - (void)deleteAutoCompleteDropDown
 {
     [self.autoCompleteView removeFromSuperview];
     self.autoCompleteView = nil;
-    self.autoCompleteDataSource = nil;
 }
 
-- (void)setAutoCompleteHeight
+- (void)autoCompleteCellClickedWithTitleString:(NSString *)string
 {
-    int height;
-    switch (self.autoCompleteDataSource.count) {
-        case 0:     height = 0;     break;      // Show Nothing
-        case 1:     height = 42;    break;      // Show Header and 1 Cell
-        case 2:     height = 68;    break;      // Show Header and 2 Cells
-        case 3:     height = 94;    break;      // Show Header and 3 Cells
-        default:    height = 109;               // Show Entire View (header and roughly 3.5 cells)
-    }
-    
-    CGRect newFrame = CGRectMake(self.autoCompleteView.frame.origin.x,
-                                 self.autoCompleteView.frame.origin.y,
-                                 self.autoCompleteView.frame.size.width,
-                                 height);
-    
-    self.autoCompleteView.frame = newFrame;
-}
-
-
-#pragma mark - Xib's UITableView DataSource & Delegate Methods
-
-
--(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-    self.textFieldBeingEdited.text = cell.textLabel.text;
+    self.textFieldBeingEdited.text = string;
     [self.textFieldBeingEdited endEditing:YES];
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
-    
-    cell.backgroundColor = [UIColor colorWithRed:0 green:1 blue:1 alpha:0.25];
-//    cell.textLabel.text = self.autoCompleteDataSource[indexPath.row];
-    cell.textLabel.attributedText = self.autoCompleteDataSource[indexPath.row];
-    
-    return cell;
-}
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    return self.autoCompleteDataSource.count;
-}
-
-- (NSArray *)arrayWithAutoCompleteItemsFromList:(NSArray *)fullList usingString:(NSString *)searchString
-{
-    // Get Array of Lowercase Strings from fullList
-    NSMutableArray *lcFullList = [NSMutableArray new];
-    for (NSString *string in fullList) {
-        [lcFullList addObject:[string lowercaseString]];
-    }
-    
-    // Pull Items from lcFullList Based on searchString
-    NSPredicate *beginsWithPredicate = [NSPredicate predicateWithFormat:@"SELF BEGINSWITH[cd] %@", searchString];
-    NSPredicate *containsPredicate = [NSPredicate predicateWithFormat:@"SELF CONTAINS[cd] %@", searchString];
-    NSMutableOrderedSet *autoCompleteSet = [NSMutableOrderedSet new];
-    
-    [autoCompleteSet addObjectsFromArray:[lcFullList filteredArrayUsingPredicate:beginsWithPredicate]];
-    [autoCompleteSet addObjectsFromArray:[lcFullList filteredArrayUsingPredicate:containsPredicate]];
-    
-    // Make Array of Normal Strings Based on Array of Lowercase Strings
-    NSMutableArray *autoCompleteArray = [NSMutableArray new];
-    for (NSString *foundLCString in autoCompleteSet) {
-        for (NSString *string in fullList) {
-            if ([[string lowercaseString] isEqualToString:foundLCString]) {
-                [autoCompleteArray addObject:string];
-                break;
-            }
-        }
-    }
-    
-    // Change Attributes of Normal Strings in autoCompleteArray Based on searchStrings
-    NSMutableArray *attArray = [NSMutableArray new];
-    NSString *boldFontName = [[UIFont boldSystemFontOfSize:12] fontName];
-    UIColor *normalColor = [UIColor colorWithRed:0.46 green:0.55 blue:0.64 alpha:1];
-    UIColor *foundColor = [UIColor blackColor];
-    
-    for (NSString *autoCompleteString in autoCompleteArray) {
-        NSRange searchRange = [[autoCompleteString lowercaseString] rangeOfString:[searchString lowercaseString]];
-        if (searchRange.location != NSNotFound) {
-            NSMutableAttributedString *attString = [[NSMutableAttributedString alloc] initWithString:autoCompleteString];
-            
-            [attString beginEditing];
-            [attString addAttribute:NSFontAttributeName // Make searchString Bold
-                              value:[UIFont fontWithName:boldFontName size:18.0]
-                              range:searchRange];
-            [attString addAttribute:NSForegroundColorAttributeName // Set autoCompleteString Color
-                              value:normalColor
-                              range:[autoCompleteString rangeOfString:autoCompleteString]];
-            [attString addAttribute:NSForegroundColorAttributeName // Set searchString Color
-                              value:foundColor
-                              range:searchRange];
-            [attArray addObject:attString];
-        }
-    }
-    
-    return [attArray copy];
 }
 
 
@@ -453,15 +340,9 @@
     if (!_deleteAlert) _deleteAlert = [[UIAlertView alloc] initWithTitle:@"Delete?"
                                                                  message:@"Are you sure you want to delete item?"
                                                                 delegate:self
-                                                       cancelButtonTitle:@"Cancel"
-                                                       otherButtonTitles:@"Delete", nil];
+                                                       cancelButtonTitle:@"Never Mind"
+                                                       otherButtonTitles:@"Delete!", nil];
     return _deleteAlert;
-}
-
-- (NSArray *)autoCompleteDataSource
-{
-    if (!_autoCompleteDataSource) _autoCompleteDataSource = [NSArray new];
-    return _autoCompleteDataSource;
 }
 
 @end

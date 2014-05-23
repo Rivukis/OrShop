@@ -10,7 +10,6 @@
 
 @interface ShoppingItemCell : UITableViewCell
 
-@property (weak, nonatomic) IBOutlet UIButton *checkOrUncheckButton;
 @property (weak, nonatomic) IBOutlet UIImageView *checkboxImage;
 @property (weak, nonatomic) IBOutlet UILabel *itemNameLabel;
 @property (weak, nonatomic) IBOutlet UILabel *itemNotesLabel;

@@ -11,8 +11,6 @@
 #import "ShoppingItemViewController.h"
 #import "DataSourceController.h"
 
-
-
 @interface StoreTableViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate>
 
 @property (strong, nonatomic) DataSourceController *dataSource;
@@ -20,7 +18,7 @@
 
 @property (strong, nonatomic) UIAlertView *actionMenuAlert;
 @property (strong, nonatomic) UIAlertView *moveListAlert;
-@property (strong, nonatomic) UIAlertView *confirmDeletionAlert;
+@property (strong, nonatomic) UIAlertView *confirmDeleteAlert;
 @property (strong, nonatomic) NSIndexPath *currentCellIndex;
 
 @end
@@ -106,7 +104,7 @@
             
         // Delete Button Selected
         } else if (buttonIndex == 1) {
-            [self.confirmDeletion show];
+            [self.confirmDeleteAlert show];
             
         // Move Button Selected
         } else if (buttonIndex == 2) {
@@ -137,7 +135,11 @@
             }
             // Create || Access newStoreList
             NSMutableArray *newStoreList = self.dataSource.lists[newStoreName];
-            if (!newStoreList) newStoreList = [NSMutableArray new];
+            if (newStoreList) {
+                
+            } else {
+                newStoreList = [NSMutableArray new];
+            }
             
             // Move Items, Save Data, && Reload Table
             newStoreList = [[newStoreList arrayByAddingObjectsFromArray:oldStoreList] mutableCopy];
@@ -151,7 +153,7 @@
     }
     
     // Confirm Deletion
-    if ([alertView isEqual:self.confirmDeletionAlert]) {
+    if ([alertView isEqual:self.confirmDeleteAlert]) {
         
         // Keep Button Selected
         if (buttonIndex == 0) {
@@ -162,7 +164,7 @@
             NSString *storeName = self.storeNames[self.currentCellIndex.row];
             [self.dataSource.lists removeObjectForKey:storeName];
             [self.dataSource save];
-            [self.tableView deleteRowsAtIndexPaths:@[self.currentCellIndex] withRowAnimation:UITableViewRowAnimationFade];
+            [self.tableView deleteRowsAtIndexPaths:@[self.currentCellIndex] withRowAnimation:UITableViewRowAnimationMiddle];
         }
         return;
     }
@@ -204,12 +206,14 @@
     return _moveListAlert;
 }
 
-- (UIAlertView *)confirmDeletion
+- (UIAlertView *)confirmDeleteAlert
 {
-    if (!_confirmDeletionAlert) {
-        _confirmDeletionAlert = [[UIAlertView alloc] initWithTitle:@"Delete?" message:@"Deleting this list will also delete all items in this list." delegate:self cancelButtonTitle:@"Never Mind" otherButtonTitles:@"Delete!", nil];
-    }
-    return _confirmDeletionAlert;
+    if (!_confirmDeleteAlert) _confirmDeleteAlert= [[UIAlertView alloc] initWithTitle:@"Delete?"
+                                                                              message:@"Deleting this list will also delete all items in this list."
+                                                                             delegate:self
+                                                                    cancelButtonTitle:@"Never Mind"
+                                                                    otherButtonTitles:@"Delete!", nil];
+    return _confirmDeleteAlert;
 }
 
 

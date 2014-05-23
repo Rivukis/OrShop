@@ -8,8 +8,18 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol AutoCompleteViewDelegate <NSObject>
+
+- (void)autoCompleteCellClickedWithTitleString:(NSString *)string;
+
+@end
+
 @interface AutoCompleteView : UIView
 
-@property (weak, nonatomic) IBOutlet UITableView *tableView;
+@property (nonatomic, unsafe_unretained) id <AutoCompleteViewDelegate> delegate;
+
+- (instancetype)initWithTextField:(UITextField *)textField;
+- (void)setHeight;
+- (void)reloadDataSourceUsingArray:(NSArray *)array andString:(NSString *)string;
 
 @end

@@ -10,12 +10,13 @@
 #import "ShoppingItemCell.h"
 #import "ShoppingItemViewController.h"
 #import "DataSourceController.h"
-//#import "AppDelegate.h"
 
 @interface ShoppingListTableViewController () <UITableViewDelegate>
 
 @property (strong, nonatomic) NSArray *rightBarButtons;
 @property (strong, nonatomic) UIRefreshControl *pullRefreshControl;
+@property (strong, nonatomic) UIAlertView *confirmDeleteAlert;
+@property (strong, nonatomic) NSIndexPath *currentCellIndex;
 
 @property (strong, nonatomic) NSMutableArray *needItems;
 @property (strong, nonatomic) NSMutableArray *haveItems;
@@ -89,7 +90,7 @@
     [self refreshTableView];
     [self saveChangesToDataSourceSortListUsingMutableArray:self.haveItems];
     [self.tableView reloadData];
-//    [self.navigationController popViewControllerAnimated:YES];
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)addNewItem
@@ -303,12 +304,12 @@
                     lastItemSortListIndex = currentDataSourceItemIndex + 1;
                 }
                 if (currentDataSourceItemIndex > aboveDataSourceItemIndex) {
-//                    // Possibly Add
-//                    placeToAddIndex = ceilf((belowDataSourceItemIndex + aboveDataSourceItemIndex) / 2.0);
-//                    if (placeToAddIndex <= lastItemSortListIndex) placeToAddIndex = lastItemSortListIndex + 1;
-//                    [sortList removeObjectAtIndex:currentDataSourceItemIndex];
-//                    [sortList insertObject:item.name atIndex:placeToAddIndex];
-//                    lastItemSortListIndex = placeToAddIndex;
+                    //                    // Possibly Add
+                    //                    placeToAddIndex = ceilf((belowDataSourceItemIndex + aboveDataSourceItemIndex) / 2.0);
+                    //                    if (placeToAddIndex <= lastItemSortListIndex) placeToAddIndex = lastItemSortListIndex + 1;
+                    //                    [sortList removeObjectAtIndex:currentDataSourceItemIndex];
+                    //                    [sortList insertObject:item.name atIndex:placeToAddIndex];
+                    //                    lastItemSortListIndex = placeToAddIndex;
                     
                     tempName = sortList[aboveDataSourceItemIndex];
                     [sortList removeObjectAtIndex:aboveDataSourceItemIndex];
@@ -332,36 +333,41 @@
     }
     
     [self.dataSource save];
+
 }
 
 
 #pragma mark - User Inputs
 
 
-- (IBAction)checkOrUncheckButton:(UIButton *)sender {
-    UITableViewCell *cell = (UITableViewCell *)sender.superview.superview.superview;
-    UITableView *table = (UITableView *)cell.superview.superview;
-    NSIndexPath* indexPath = [table indexPathForCell:cell];
-    ShoppingItem *item = (indexPath.section == 0) ? self.needItems[indexPath.row] : self.haveItems[indexPath.row];
-    
-    if (item.isChecked) {
-        item.isChecked = NO;
-        NSMutableArray *tempArray = [NSMutableArray new];
-        for (ShoppingItem *itemAgain in self.dataSource.lists[self.storeName]) if (itemAgain.isChecked) [tempArray addObject:itemAgain];
-        
-        NSSortDescriptor *haveSorter = [[NSSortDescriptor alloc] initWithKey:@"checkedOrder" ascending:YES];
-        [tempArray sortUsingDescriptors:@[haveSorter]];
-        
-        for (ShoppingItem *itemAgain in tempArray) itemAgain.checkedOrder = [tempArray indexOfObject:itemAgain];
-    } else {
-        item.isChecked = YES;
-        item.checkedOrder = 0;
-        
-        for (ShoppingItem *itemAgain in self.dataSource.lists[self.storeName]) if (itemAgain.isChecked) item.checkedOrder++;
-    }
-//    [table reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    [table reloadData];
-}
+//- (IBAction)checkOrUncheckButton:(UIButton *)sender {
+//    
+//    UITableViewCell *selectedCell = [self.tableView cellForRowAtIndexPath:[self.tableView indexPathForSelectedRow]];
+//    NSLog(@"selected cell: %@", selectedCell.description);
+//    
+//    UITableViewCell *cell = (UITableViewCell *)sender.superview.superview.superview;
+//    UITableView *table = (UITableView *)cell.superview.superview;
+//    NSIndexPath* indexPath = [table indexPathForCell:cell];
+//    ShoppingItem *item = (indexPath.section == 0) ? self.needItems[indexPath.row] : self.haveItems[indexPath.row];
+//    
+//    if (item.isChecked) {
+//        item.isChecked = NO;
+//        NSMutableArray *tempArray = [NSMutableArray new];
+//        for (ShoppingItem *itemAgain in self.dataSource.lists[self.storeName]) if (itemAgain.isChecked) [tempArray addObject:itemAgain];
+//        
+//        NSSortDescriptor *haveSorter = [[NSSortDescriptor alloc] initWithKey:@"checkedOrder" ascending:YES];
+//        [tempArray sortUsingDescriptors:@[haveSorter]];
+//        
+//        for (ShoppingItem *itemAgain in tempArray) itemAgain.checkedOrder = [tempArray indexOfObject:itemAgain];
+//    } else {
+//        item.isChecked = YES;
+//        item.checkedOrder = 0;
+//        
+//        for (ShoppingItem *itemAgain in self.dataSource.lists[self.storeName]) if (itemAgain.isChecked) item.checkedOrder++;
+//    }
+////    [table reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+//    [table reloadData];
+//}
 
 
 #pragma mark - UITableView Delegate && DataSource
@@ -400,7 +406,82 @@
     cell.checkboxImage.image = item.isChecked ? [UIImage imageNamed: @"Checked_Checkbox"] : [UIImage imageNamed: @"Unchecked_Checkbox"];
     cell.backgroundColor = item.colorFromTemp;
     
+    
+//    cell.accessoryTy
     return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    ShoppingItem *selectedItem = (indexPath.section == 0) ? self.needItems[indexPath.row] : self.haveItems[indexPath.row];
+    selectedItem.isChecked = !selectedItem.isChecked;
+    
+    if (selectedItem.isChecked) {
+        // Assign selectedItem.checkedOrder to equal # of Checked Items + 1 (starts at 0)
+        selectedItem.checkedOrder = 0;
+        for (ShoppingItem *item in self.dataSource.lists[self.storeName]) if (item.isChecked) selectedItem.checkedOrder++;
+    } else {
+        // Re-Assign .checkedOrder After Removal
+        NSMutableArray *tempArray = [NSMutableArray new];
+        for (ShoppingItem *item in self.dataSource.lists[self.storeName]) if (item.isChecked) [tempArray addObject:item];
+        NSSortDescriptor *haveSorter = [[NSSortDescriptor alloc] initWithKey:@"checkedOrder" ascending:YES];
+        [tempArray sortUsingDescriptors:@[haveSorter]];
+        for (ShoppingItem *checkedItem in tempArray) checkedItem.checkedOrder = [tempArray indexOfObject:checkedItem];
+    }
+    
+    
+    //    [table reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+    [tableView reloadData];
+}
+
+- (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath
+{
+    self.currentCellIndex = indexPath;
+    [self performSegueWithIdentifier:@"ToItem" sender:nil];
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (editingStyle == UITableViewCellEditingStyleDelete) {
+        self.currentCellIndex = indexPath;
+        [self.confirmDeleteAlert show];
+    } else {
+        
+    }
+}
+
+
+#pragma mark - UIAlertView Delegate Methods
+
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    // Confirm Deletion
+    if (alertView == self.confirmDeleteAlert) {
+        // Never Mind Button Selected
+        if (buttonIndex == 0) {
+            [self.tableView setEditing:NO animated:YES];
+            
+        // Delete Button Selected
+        } else if (buttonIndex == 1) {
+            NSMutableArray *storeList = self.dataSource.lists[self.storeName];
+            NSMutableArray *currentSubList = (self.currentCellIndex.section == 0) ? self.needItems : self.haveItems;
+            ShoppingItem *item = currentSubList[self.currentCellIndex.row];
+            
+            // Delete Item from dataSource
+            [storeList removeObject:item];
+            if (!storeList.count) [self.dataSource.lists removeObjectForKey:self.storeName];
+            [self.dataSource save];
+            
+            // Delete Item from tableView
+            [currentSubList removeObject:item];
+            [self.tableView setEditing:NO animated:YES];
+            [self.tableView deleteRowsAtIndexPaths:@[self.currentCellIndex] withRowAnimation:UITableViewRowAnimationMiddle];
+            
+            // Pop View If No Items In Store List
+            if (self.needItems.count == 0 && self.haveItems.count == 0) [self.navigationController popViewControllerAnimated:YES];
+        }
+    }
 }
 
 
@@ -439,15 +520,26 @@
     return _pullRefreshControl;
 }
 
+- (UIAlertView *)confirmDeleteAlert
+{
+    if (!_confirmDeleteAlert) _confirmDeleteAlert = [[UIAlertView alloc] initWithTitle:@"Delete?"
+                                                                 message:@"Are you sure you want to delete item?"
+                                                                delegate:self
+                                                       cancelButtonTitle:@"Never Mind"
+                                                       otherButtonTitles:@"Delete!", nil];
+    return _confirmDeleteAlert;
+}
+
 
 #pragma mark - Navigation
 
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
-    if ([segue.identifier isEqualToString:@"ToItemA"] || [segue.identifier isEqualToString:@"ToItemB"]) {
+//    if ([segue.identifier isEqualToString:@"ToItemA"] || [segue.identifier isEqualToString:@"ToItemB"]) {
+    if ([segue.identifier isEqualToString:@"ToItem"]) {
         ShoppingItemViewController *destVC = segue.destinationViewController;
-        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+        NSIndexPath *indexPath = self.currentCellIndex;
         
         destVC.item = (indexPath.section == 0) ? self.needItems[indexPath.row] : self.haveItems[indexPath.row];
         destVC.dataSource = self.dataSource;
