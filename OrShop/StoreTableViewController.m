@@ -164,6 +164,7 @@
             NSString *storeName = self.storeNames[self.currentCellIndex.row];
             [self.dataSource.lists removeObjectForKey:storeName];
             [self.dataSource save];
+            [self.tableView setEditing:NO animated:YES];
             [self.tableView deleteRowsAtIndexPaths:@[self.currentCellIndex] withRowAnimation:UITableViewRowAnimationMiddle];
         }
         return;
