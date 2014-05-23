@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SampleLists</key>
+	<dict>
+		<key>Walmart</key>
+		<array>
+			<dict>
+				<key>Name</key>
+				<string>Roast Chicken</string>
+				<key>AmountNeeded</key>
+				<integer>1</integer>
+				<key>TempAtPurchase</key>
+				<integer>3</integer>
+				<key>Notes</key>
+				<string>The ones at the front of the store</string>
+			</dict>
+			<dict>
+				<key>Name</key>
+				<string>Crackers</string>
+				<key>AmountNeeded</key>
+				<integer>1</integer>
+				<key>TempAtPurchase</key>
+				<integer>2</integer>
+				<key>Notes</key>
+				<string></string>
+			</dict>
+			<dict>
+				<key>Name</key>
+				<string>Milk</string>
+				<key>AmountNeeded</key>
+				<integer>2</integer>
+				<key>TempAtPurchase</key>
+				<integer>1</integer>
+				<key>Notes</key>
+				<string>gallon, OMega 3</string>
+			</dict>
+		</array>
+		<key>Lowes</key>
+		<array>
+			<dict>
+				<key>Name</key>
+				<string>Porchlight</string>
+				<key>AmountNeeded</key>
+				<integer>1</integer>
+				<key>TempAtPurchase</key>
+				<integer>2</integer>
+				<key>Notes</key>
+				<string></string>
+			</dict>
+			<dict>
+				<key>Name</key>
+				<string>Mailbox</string>
+				<key>AmountNeeded</key>
+				<integer>1</integer>
+				<key>TempAtPurchase</key>
+				<integer>2</integer>
+				<key>Notes</key>
+				<string>blue</string>
+			</dict>
+		</array>
+	</dict>
+	<key>StoreNamesUsed</key>
+	<array>
+		<string>Walmart</string>
+		<string>Lowes</string>
+	</array>
+	<key>ItemNamesUsed</key>
+	<array>
+		<string>Roast Chicken</string>
+		<string>Crackers</string>
+		<string>Milk</string>
+		<string>Porchlight</string>
+		<string>Mailbox</string>
+	</array>
+	<key>ItemsSortList</key>
+	<array>
+		<string>Crackers</string>
+		<string>Milk</string>
+		<string>Roast Chicken</string>
+	</array>
+</dict>
+</plist>

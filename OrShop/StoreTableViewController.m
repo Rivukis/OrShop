@@ -1,0 +1,249 @@
+//
+//  StoreTableViewController.m
+//  OrShop
+//
+//  Created by Brian Radebaugh on 4/11/14.
+//  Copyright (c) 2014 Brian Radebaugh. All rights reserved.
+//
+
+#import "StoreTableViewController.h"
+#import "ShoppingListTableViewController.h"
+#import "ShoppingItemViewController.h"
+#import "DataSourceController.h"
+
+
+
+@interface StoreTableViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate>
+
+@property (strong, nonatomic) DataSourceController *dataSource;
+@property (strong, nonatomic) NSArray *storeNames;
+
+@property (strong, nonatomic) UIAlertView *actionMenuAlert;
+@property (strong, nonatomic) UIAlertView *moveListAlert;
+@property (strong, nonatomic) UIAlertView *confirmDeletionAlert;
+@property (strong, nonatomic) NSIndexPath *currentCellIndex;
+
+@end
+
+@implementation StoreTableViewController
+
+- (id)initWithStyle:(UITableViewStyle)style
+{
+    self = [super initWithStyle:style];
+    if (self) {
+        
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+    // Handle Version Changes
+    NSString *currentVersion = @"1.0";
+    NSString *lastRunningVersion = [[NSUserDefaults standardUserDefaults] stringForKey:@"Version"];
+    if (![lastRunningVersion isEqualToString:currentVersion]) {
+        // Run Code to Handle Version Change
+        [[NSUserDefaults standardUserDefaults] setObject:currentVersion forKey:@"Version"];
+    }
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    
+    [self.tableView reloadData];
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+}
+
+#pragma mark - UITableView Delegate && DataSource
+
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return self.dataSource.lists.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"StoreCell"
+                                                            forIndexPath:indexPath];
+    [cell.textLabel setFont:[UIFont fontWithName:@"Avenir Next" size:18]];
+    cell.textLabel.text = self.storeNames[indexPath.row];
+    
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (editingStyle == UITableViewCellEditingStyleDelete) {
+        self.currentCellIndex = indexPath;
+        [self.actionMenu show];
+    }
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForDeleteConfirmationButtonForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return @"Actions";
+}
+
+
+#pragma mark - UIAlertView Delegate
+
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    // Action Menu
+    if ([alertView isEqual:self.actionMenuAlert]) {
+        
+        // Never Mind Button Selected
+        if (buttonIndex == 0) {
+            [self.tableView setEditing:NO animated:YES];
+            
+        // Delete Button Selected
+        } else if (buttonIndex == 1) {
+            [self.confirmDeletion show];
+            
+        // Move Button Selected
+        } else if (buttonIndex == 2) {
+            [self.moveListAlert textFieldAtIndex:0].text = @"";
+            [self.moveListAlert textFieldAtIndex:0].placeholder = self.storeNames[self.currentCellIndex.row];
+            [self.moveListAlert show];
+        }
+        return;
+    }
+    
+    // Move list
+    if ([alertView isEqual:self.moveListAlert]) {
+        // Never Mind Button Selected
+        if (buttonIndex == 0) {
+            [self.tableView setEditing:NO animated:YES];
+            
+        // Move All Items in oldStoreList to newStoreList && Save
+        } else if (buttonIndex == 1) {
+            NSString *oldStoreName = self.storeNames[self.currentCellIndex.row];
+            NSMutableArray *oldStoreList = self.dataSource.lists[oldStoreName];
+            NSString *newStoreName = [self.moveListAlert textFieldAtIndex:0].text;
+            if ([newStoreName isEqualToString:@""]) newStoreName = [DataSourceController stringWithNoStoreName];
+            
+            // Check If Store Names Are the Same
+            if ([newStoreName isEqualToString:oldStoreName]) {
+                [self.tableView setEditing:NO animated:YES];
+                return;
+            }
+            // Create || Access newStoreList
+            NSMutableArray *newStoreList = self.dataSource.lists[newStoreName];
+            if (!newStoreList) newStoreList = [NSMutableArray new];
+            
+            // Move Items, Save Data, && Reload Table
+            newStoreList = [[newStoreList arrayByAddingObjectsFromArray:oldStoreList] mutableCopy];
+            [self.dataSource.lists setObject:newStoreList forKey:newStoreName];
+            [self.dataSource.lists removeObjectForKey:oldStoreName];
+            [self.dataSource addToStoreNamesUsedString:newStoreName];
+            [self.dataSource save];
+            [self.tableView reloadData];
+        }
+        return;
+    }
+    
+    // Confirm Deletion
+    if ([alertView isEqual:self.confirmDeletionAlert]) {
+        
+        // Keep Button Selected
+        if (buttonIndex == 0) {
+            [self.tableView setEditing:NO animated:YES];
+            
+        // Delete Button Selected
+        } else if (buttonIndex == 1) {
+            NSString *storeName = self.storeNames[self.currentCellIndex.row];
+            [self.dataSource.lists removeObjectForKey:storeName];
+            [self.dataSource save];
+            [self.tableView deleteRowsAtIndexPaths:@[self.currentCellIndex] withRowAnimation:UITableViewRowAnimationFade];
+        }
+        return;
+    }
+}
+
+
+#pragma mark - Lazy Instantiation
+
+
+- (DataSourceController *)dataSource
+{
+    if (!_dataSource) _dataSource = [DataSourceController new];
+    return _dataSource;
+}
+
+- (NSArray *)storeNames
+{
+    return [[self.dataSource.lists allKeys] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+}
+
+- (UIAlertView *)actionMenu
+{
+    if (!_actionMenuAlert) {
+        _actionMenuAlert= [[UIAlertView alloc] initWithTitle:@"Actions" message:@"What would you like to do?" delegate:self cancelButtonTitle:@"Never Mind" otherButtonTitles:@"Delete", @"Move", nil];
+    }
+    return _actionMenuAlert;
+}
+
+- (UIAlertView *)moveListAlert
+{
+    if (!_moveListAlert) {
+        _moveListAlert = [[UIAlertView alloc] initWithTitle:@"Move All Items" message:@"All items in this list will be moved to the list typed below" delegate:self cancelButtonTitle:@"Never Mind" otherButtonTitles:@"Move", nil];
+        _moveListAlert.alertViewStyle = UIAlertViewStylePlainTextInput;
+        
+        UITextField *textField = [_moveListAlert textFieldAtIndex:0];
+        textField.clearButtonMode = UITextFieldViewModeAlways;
+        textField.autocapitalizationType = UITextAutocapitalizationTypeWords;
+    }
+    return _moveListAlert;
+}
+
+- (UIAlertView *)confirmDeletion
+{
+    if (!_confirmDeletionAlert) {
+        _confirmDeletionAlert = [[UIAlertView alloc] initWithTitle:@"Delete?" message:@"Deleting this list will also delete all items in this list." delegate:self cancelButtonTitle:@"Never Mind" otherButtonTitles:@"Delete!", nil];
+    }
+    return _confirmDeletionAlert;
+}
+
+
+#pragma mark - Navigation Methods
+
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    if ([segue.identifier isEqualToString:@"ToShoppingList"]) {
+        ShoppingListTableViewController *destVC = segue.destinationViewController;
+        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+        UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+        NSString *storeName = cell.textLabel.text;
+        
+        destVC.storeName = storeName;
+        destVC.dataSource = self.dataSource;
+        
+    } else if ([segue.identifier isEqualToString:@"ToNewItem"]) {
+        
+        // Check for "no store" List And Create If Not Found
+        NSString *storeName = [DataSourceController stringWithNoStoreName];
+        NSMutableArray *storeList = self.dataSource.lists[storeName];
+        if (storeList == NULL) {
+            storeList = [NSMutableArray new];
+            [self.dataSource.lists setObject:storeList forKey:storeName];
+        }
+        ShoppingItem *item = [[ShoppingItem alloc] initGenericItemWithStoreName:storeName];
+        [storeList addObject:item];
+        
+        ShoppingItemViewController *destVC = segue.destinationViewController;
+        destVC.item = item;
+        destVC.dataSource = self.dataSource;
+        destVC.segueIdentifier = segue.identifier;
+    }
+}
+
+@end
