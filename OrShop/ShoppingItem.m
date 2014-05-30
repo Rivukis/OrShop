@@ -82,4 +82,9 @@
     return _colorFromTemp;
 }
 
+- (NSString *)description
+{
+    return (self.name) ? self.name : @"";
+}
+
 @end

@@ -208,7 +208,7 @@
                         aboveInputArrayItemIndex = [[inputArrayIndexesOfItemsAlsoInSortList firstObject] integerValue];
                         belowInputArrayItemIndex = -1;
                         isSearching = NO;
-                    } else if (searchLowerBound == searchUpperBound && searchLocation == inputArrayIndexesOfItemsAlsoInSortList.count + 1) {
+                    } else if (searchLowerBound == searchUpperBound && searchLocation == inputArrayIndexesOfItemsAlsoInSortList.count - 1) {
                         // searchLocation Out of Upper Bounds
                         belowInputArrayItemIndex = [[inputArrayIndexesOfItemsAlsoInSortList lastObject] integerValue];
                         aboveInputArrayItemIndex = inputArray.count;
@@ -333,7 +333,6 @@
     }
     
     [self.dataSource save];
-
 }
 
 
