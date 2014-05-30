@@ -136,7 +136,7 @@
         if (![sortedArray containsObject:item]) [sortedArray addObject:item];
     }
     
-    arrayToSort = [NSMutableArray mutableCopy];
+    arrayToSort = [NSMutableArray new];
     
     return sortedArray;
 }
