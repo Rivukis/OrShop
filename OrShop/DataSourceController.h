@@ -21,6 +21,7 @@
 - (void)save;
 - (void)addToStoreNamesUsedString:(NSString *)storeName;
 - (void)addToItemNamesUsedString:(NSString *)itemName;
+- (void)moveItemsFromStoreName:(NSString *)fromStoreName toStoreName:(NSString *)toStoreName;
 
 + (NSString *)stringWithNoStoreName;
 

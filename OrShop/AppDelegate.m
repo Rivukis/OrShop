@@ -12,7 +12,15 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    // Override point for customization after application launch.
+    // Handle Version Changes
+    NSString *currentVersion = @"1.0";
+    NSString *lastRunningVersion = [[NSUserDefaults standardUserDefaults] stringForKey:@"Version"];
+    if (![lastRunningVersion isEqualToString:currentVersion]) {
+        // Run Code to Handle Version Change
+        [[NSUserDefaults standardUserDefaults] setObject:currentVersion forKey:@"Version"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
+    
     return YES;
 }
 							

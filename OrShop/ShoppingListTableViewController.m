@@ -38,6 +38,7 @@
 {
     [super viewDidLoad];
     
+    [self.view setTranslatesAutoresizingMaskIntoConstraints:NO];
     self.title = self.storeName;
     [self.navigationItem setRightBarButtonItems:self.rightBarButtons];
     self.refreshControl = self.pullRefreshControl;
@@ -64,8 +65,11 @@
     self.haveItems = nil;
     
     for (ShoppingItem *item in self.dataSource.lists[self.storeName]) {
-        if (item.isChecked) [self.haveItems addObject:item];
-            else [self.needItems addObject:item];
+        if (item.isChecked) {
+            [self.haveItems addObject:item];
+        } else {
+            [self.needItems addObject:item];
+        }
     }
     
     self.needItems = [self sortUsingDataSourceOnMutableArray:self.needItems];
@@ -115,9 +119,11 @@
     }
     
     // - Add Unknown Items To Sorted Array
+    NSMutableArray *unKnownItems = [NSMutableArray new];
     for (ShoppingItem *item in arrayToSort) {
-        if (![sortedArray containsObject:item]) [sortedArray addObject:item];
+        if (![sortedArray containsObject:item]) [unKnownItems addObject:item];
     }
+    sortedArray = [[unKnownItems arrayByAddingObjectsFromArray:sortedArray] mutableCopy];
     
     // Re-sort Based on Item Temp At Purchase
     arrayToSort = [sortedArray mutableCopy];

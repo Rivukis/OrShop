@@ -38,20 +38,18 @@
 {
     [super viewDidLoad];
     
-    // Handle Version Changes
-    NSString *currentVersion = @"1.0";
-    NSString *lastRunningVersion = [[NSUserDefaults standardUserDefaults] stringForKey:@"Version"];
-    if (![lastRunningVersion isEqualToString:currentVersion]) {
-        // Run Code to Handle Version Change
-        [[NSUserDefaults standardUserDefaults] setObject:currentVersion forKey:@"Version"];
-    }
+    [self.view setTranslatesAutoresizingMaskIntoConstraints:NO];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+    [self.tableView reloadData];
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    
-    [self.tableView reloadData];
 }
 
 - (void)didReceiveMemoryWarning
@@ -89,85 +87,88 @@
     return @"Actions";
 }
 
+// TODO: This to stop the resizing of cells when cell is selected. Find real fix.
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView reloadData];
+}
+
 
 #pragma mark - UIAlertView Delegate
 
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    // Action Menu
     if ([alertView isEqual:self.actionMenuAlert]) {
-        
-        // Never Mind Button Selected
-        if (buttonIndex == 0) {
-            [self.tableView setEditing:NO animated:YES];
-            
-        // Delete Button Selected
-        } else if (buttonIndex == 1) {
-            [self.confirmDeleteAlert show];
-            
-        // Move Button Selected
-        } else if (buttonIndex == 2) {
-            [self.moveListAlert textFieldAtIndex:0].text = @"";
-            [self.moveListAlert textFieldAtIndex:0].placeholder = self.storeNames[self.currentCellIndex.row];
-            [self.moveListAlert show];
-        }
-        return;
+        [self actionMenuAlertViewClickedButtonAtIndex:buttonIndex];
+    } else if ([alertView isEqual:self.moveListAlert]) {
+        [self MoveListAlertViewClickedButtonAtIndex:buttonIndex];
+    } else if ([alertView isEqual:self.confirmDeleteAlert]) {
+        [self confirmDeletionAlertViewClickedButtonAtIndex:buttonIndex];
     }
-    
-    // Move list
-    if ([alertView isEqual:self.moveListAlert]) {
-        // Never Mind Button Selected
-        if (buttonIndex == 0) {
-            [self.tableView setEditing:NO animated:YES];
-            
-        // Move All Items in oldStoreList to newStoreList && Save
-        } else if (buttonIndex == 1) {
-            NSString *oldStoreName = self.storeNames[self.currentCellIndex.row];
-            NSMutableArray *oldStoreList = self.dataSource.lists[oldStoreName];
-            NSString *newStoreName = [self.moveListAlert textFieldAtIndex:0].text;
-            if ([newStoreName isEqualToString:@""]) newStoreName = [DataSourceController stringWithNoStoreName];
-            
-            // Check If Store Names Are the Same
-            if ([newStoreName isEqualToString:oldStoreName]) {
-                [self.tableView setEditing:NO animated:YES];
-                return;
-            }
-            // Create || Access newStoreList
-            NSMutableArray *newStoreList = self.dataSource.lists[newStoreName];
-            if (newStoreList) {
-                
-            } else {
-                newStoreList = [NSMutableArray new];
-            }
-            
-            // Move Items, Save Data, && Reload Table
-            newStoreList = [[newStoreList arrayByAddingObjectsFromArray:oldStoreList] mutableCopy];
-            [self.dataSource.lists setObject:newStoreList forKey:newStoreName];
-            [self.dataSource.lists removeObjectForKey:oldStoreName];
-            [self.dataSource addToStoreNamesUsedString:newStoreName];
-            [self.dataSource save];
-            [self.tableView reloadData];
-        }
-        return;
+}
+
+- (void)actionMenuAlertViewClickedButtonAtIndex:(NSInteger)buttonIndex {
+    // Never Mind Button Selected
+    if (buttonIndex == 0) {
+        [self.tableView setEditing:NO animated:YES];
     }
-    
-    // Confirm Deletion
-    if ([alertView isEqual:self.confirmDeleteAlert]) {
+    // Delete Button Selected
+    else if (buttonIndex == 1) {
+        [self.confirmDeleteAlert show];
+    }
+    // Move Button Selected
+    else if (buttonIndex == 2) {
+        [[self.moveListAlert textFieldAtIndex:0] setText:@""];
+        [[self.moveListAlert textFieldAtIndex:0] setPlaceholder:self.storeNames[self.currentCellIndex.row]];
+        [self.moveListAlert show];
+    }
+}
+
+- (void)MoveListAlertViewClickedButtonAtIndex:(NSInteger)buttonIndex {
+    // Never Mind Button Selected
+    if (buttonIndex == 0) {
+        [self.tableView setEditing:NO animated:YES];
+    }
+    // Move All Items in oldStoreList to newStoreList && Save
+    else if (buttonIndex == 1) {
+        NSString *oldStoreName = self.storeNames[self.currentCellIndex.row];
+//        NSMutableArray *oldStoreList = self.dataSource.lists[oldStoreName];
+        NSString *newStoreName = [self.moveListAlert textFieldAtIndex:0].text;
+        if ([newStoreName isEqualToString:@""]) newStoreName = [DataSourceController stringWithNoStoreName];
         
-        // Keep Button Selected
-        if (buttonIndex == 0) {
+        // Check If Store Names Are the Same
+        if ([newStoreName isEqualToString:oldStoreName]) {
             [self.tableView setEditing:NO animated:YES];
-            
-        // Delete Button Selected
-        } else if (buttonIndex == 1) {
-            NSString *storeName = self.storeNames[self.currentCellIndex.row];
-            [self.dataSource.lists removeObjectForKey:storeName];
-            [self.dataSource save];
-            [self.tableView setEditing:NO animated:YES];
-            [self.tableView deleteRowsAtIndexPaths:@[self.currentCellIndex] withRowAnimation:UITableViewRowAnimationMiddle];
+            return;
         }
-        return;
+        // Create || Access newStoreList
+//        NSMutableArray *newStoreList = self.dataSource.lists[newStoreName];
+//        if (!newStoreList) newStoreList = [NSMutableArray new];
+        
+        // Move Items, Save Data, && Reload Table
+        [self.dataSource moveItemsFromStoreName:oldStoreName toStoreName:newStoreName];
+        
+//        newStoreList = [[newStoreList arrayByAddingObjectsFromArray:oldStoreList] mutableCopy];
+//        [self.dataSource.lists setObject:newStoreList forKey:newStoreName];
+//        [self.dataSource.lists removeObjectForKey:oldStoreName];
+//        [self.dataSource addToStoreNamesUsedString:newStoreName];
+        [self.dataSource save];
+        [self.tableView reloadData];
+    }
+}
+
+- (void)confirmDeletionAlertViewClickedButtonAtIndex:(NSInteger)buttonIndex {
+    // Keep Button Selected
+    if (buttonIndex == 0) {
+        [self.tableView setEditing:NO animated:YES];
+    }
+    // Delete Button Selected
+    else if (buttonIndex == 1) {
+        NSString *storeName = self.storeNames[self.currentCellIndex.row];
+        [self.dataSource.lists removeObjectForKey:storeName];
+        [self.dataSource save];
+        [self.tableView setEditing:NO animated:YES];
+        [self.tableView deleteRowsAtIndexPaths:@[self.currentCellIndex] withRowAnimation:UITableViewRowAnimationMiddle];
     }
 }
 

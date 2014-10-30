@@ -11,7 +11,7 @@
 
 @implementation DataSourceController
 
-const BOOL usePlist = NO;
+const BOOL usePlist = YES;
 
 - (void)addToStoreNamesUsedString:(NSString *)storeName
 {
@@ -31,6 +31,20 @@ const BOOL usePlist = NO;
     }
 }
 
+- (void)moveItemsFromStoreName:(NSString *)fromStoreName toStoreName:(NSString *)toStoreName {
+    NSMutableArray *fromStoreList = self.lists[fromStoreName];
+    NSMutableArray *toStoreList = self.lists[toStoreName];
+    
+    for (ShoppingItem *item in fromStoreList) {
+        item.preferredStore = toStoreName;
+    }
+    
+    toStoreList = [[toStoreList arrayByAddingObjectsFromArray:fromStoreList] mutableCopy];
+    [self.lists setObject:toStoreList forKey:toStoreName];
+    [self.lists removeObjectForKey:fromStoreName];
+    [self addToStoreNamesUsedString:toStoreName];
+}
+
 - (void)save
 {
     NSString *listsPlistPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:@"lists.plist"];
@@ -44,13 +58,6 @@ const BOOL usePlist = NO;
     
     NSString *itemsSortListPlistPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:@"itemsSortList.plist"];
     [NSKeyedArchiver archiveRootObject:self.itemsSortList toFile:itemsSortListPlistPath];
-    
-    // save sort list
-}
-
-+ (NSString *)applicationDocumentsDirectory
-{
-    return [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
 }
 
 + (BOOL)checkForPlistFileInDocs:(NSString*)fileName
@@ -60,6 +67,11 @@ const BOOL usePlist = NO;
     NSString *pathForPlistInDocs = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:fileName];
     
     return [myManager fileExistsAtPath:pathForPlistInDocs];
+}
+
++ (NSString *)applicationDocumentsDirectory
+{
+    return [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
 }
 
 + (NSString *)stringWithNoStoreName

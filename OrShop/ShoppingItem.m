@@ -7,6 +7,7 @@
 //
 
 #import "ShoppingItem.h"
+#import "UIColor+OrShopColors.h"
 
 @interface ShoppingItem () <NSCoding>
 
@@ -63,19 +64,12 @@
 
 - (UIColor *)colorFromTemp
 {
-    // Set Cell Color Based on tempAtPurchase
-    UIColor *frozenColor = [UIColor colorWithRed:0.35 green:0.67 blue:0.89 alpha:1]; // Picton Blue
-    UIColor *coldColor = [UIColor colorWithRed:0.54 green:0.76 blue:0.95 alpha:0.45]; // Jordy Blue
-    UIColor *roomColor = [UIColor whiteColor];
-    UIColor *warmColor = [UIColor colorWithRed:0.94 green:0.28 blue:0.21 alpha:0.3]; // Flamingo
-    UIColor *hotColor = [UIColor colorWithRed:0.94 green:0.28 blue:0.21 alpha:0.75]; // Flamingo
-    
     switch (self.tempAtPurchase) {
-        case 0:     _colorFromTemp = frozenColor;             break;
-        case 1:     _colorFromTemp = coldColor;               break;
-        case 2:     _colorFromTemp = roomColor;               break;
-        case 3:     _colorFromTemp = warmColor;               break;
-        case 4:     _colorFromTemp = hotColor;                break;
+        case 0:     _colorFromTemp = [UIColor frozenColor];     break;
+        case 1:     _colorFromTemp = [UIColor coldColor];       break;
+        case 2:     _colorFromTemp = [UIColor roomColor];       break;
+        case 3:     _colorFromTemp = [UIColor warmColor];       break;
+        case 4:     _colorFromTemp = [UIColor hotColor];        break;
         default:    _colorFromTemp = [UIColor whiteColor];
     }
     

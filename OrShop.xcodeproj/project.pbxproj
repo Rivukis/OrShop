@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		7A1D4F1019100F8E00FF54BF /* AutoCompleteView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7A1D4F0F19100F8E00FF54BF /* AutoCompleteView.xib */; };
 		7A1D4F13191019E800FF54BF /* AutoCompleteView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A1D4F12191019E800FF54BF /* AutoCompleteView.m */; };
+		7A4B6CA01A020B4000C66E90 /* UIColor+OrShopColors.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A4B6C9F1A020B4000C66E90 /* UIColor+OrShopColors.m */; };
 		7A7AAF8E18F89BF100A9C799 /* ShoppingItemViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A7AAF8D18F89BF100A9C799 /* ShoppingItemViewController.m */; };
 		7A7AAF9118F89C3500A9C799 /* ShoppingItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A7AAF9018F89C3500A9C799 /* ShoppingItem.m */; };
 		7AA4F89E18F88D2200408C6F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AA4F89D18F88D2200408C6F /* Foundation.framework */; };
@@ -45,6 +46,8 @@
 		7A1D4F0F19100F8E00FF54BF /* AutoCompleteView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = AutoCompleteView.xib; sourceTree = "<group>"; };
 		7A1D4F11191019E800FF54BF /* AutoCompleteView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutoCompleteView.h; sourceTree = "<group>"; };
 		7A1D4F12191019E800FF54BF /* AutoCompleteView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AutoCompleteView.m; sourceTree = "<group>"; };
+		7A4B6C9E1A020B4000C66E90 /* UIColor+OrShopColors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+OrShopColors.h"; sourceTree = "<group>"; };
+		7A4B6C9F1A020B4000C66E90 /* UIColor+OrShopColors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+OrShopColors.m"; sourceTree = "<group>"; };
 		7A7AAF8C18F89BF100A9C799 /* ShoppingItemViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShoppingItemViewController.h; sourceTree = "<group>"; };
 		7A7AAF8D18F89BF100A9C799 /* ShoppingItemViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShoppingItemViewController.m; sourceTree = "<group>"; };
 		7A7AAF8F18F89C3500A9C799 /* ShoppingItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShoppingItem.h; sourceTree = "<group>"; };
@@ -101,6 +104,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7A4B6CA11A020B5500C66E90 /* Support Classes */ = {
+			isa = PBXGroup;
+			children = (
+				7A4B6C9E1A020B4000C66E90 /* UIColor+OrShopColors.h */,
+				7A4B6C9F1A020B4000C66E90 /* UIColor+OrShopColors.m */,
+			);
+			name = "Support Classes";
+			sourceTree = "<group>";
+		};
 		7AA4F89118F88D2200408C6F = {
 			isa = PBXGroup;
 			children = (
@@ -135,10 +147,10 @@
 			isa = PBXGroup;
 			children = (
 				7AA4F8AF18F88D2200408C6F /* Main.storyboard */,
-				7A1D4F0F19100F8E00FF54BF /* AutoCompleteView.xib */,
+				7AA4F8B518F88D2200408C6F /* Images.xcassets */,
 				7AA4F8D618F890B200408C6F /* View Controllers */,
 				7AA4F8D518F890A600408C6F /* Model */,
-				7AA4F8B518F88D2200408C6F /* Images.xcassets */,
+				7A4B6CA11A020B5500C66E90 /* Support Classes */,
 				7AA4F8A418F88D2200408C6F /* Supporting Files */,
 			);
 			path = OrShop;
@@ -200,6 +212,7 @@
 				7A7AAF8D18F89BF100A9C799 /* ShoppingItemViewController.m */,
 				7A1D4F11191019E800FF54BF /* AutoCompleteView.h */,
 				7A1D4F12191019E800FF54BF /* AutoCompleteView.m */,
+				7A1D4F0F19100F8E00FF54BF /* AutoCompleteView.xib */,
 			);
 			name = "View Controllers";
 			sourceTree = "<group>";
@@ -305,6 +318,7 @@
 			files = (
 				7AA4F8D418F8909100408C6F /* ShoppingItemCell.m in Sources */,
 				7AE23EF018F898290064E7B0 /* ShoppingListTableViewController.m in Sources */,
+				7A4B6CA01A020B4000C66E90 /* UIColor+OrShopColors.m in Sources */,
 				7AE23EF318F899A60064E7B0 /* StoreTableViewController.m in Sources */,
 				7A7AAF8E18F89BF100A9C799 /* ShoppingItemViewController.m in Sources */,
 				7AA70FD51904A85F00E814EF /* DataSourceController.m in Sources */,
