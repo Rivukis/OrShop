@@ -79,6 +79,7 @@
     }
     
     // Generic Item Setup
+    [self setItemNamePlaceholderWithAttributedString:[ShoppingItemViewController redItemNamePlaceholderAttributedString]];
     UIBarButtonItem *cancelBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelBarButtonPressed)];
     cancelBarButton.tintColor = [UIColor redColor];
     [self.navigationItem setLeftBarButtonItem:cancelBarButton];
@@ -96,37 +97,65 @@
 {
     // Item Name Empty
     if ([self.itemNameTextField.text isEqualToString:@""]) {
-        UIAlertView *noNameAlert = [[UIAlertView alloc] initWithTitle:@"No Item Name!"
-                                                              message:@"Item has to have a name."
-                                                             delegate:nil
-                                                    cancelButtonTitle:@"OK"
-                                                    otherButtonTitles:nil];
-        [noNameAlert show];
+        [self playItemNameRequiredAnimation];
         return NO;
     }
     
     // Item Name Already Exists
-    BOOL itemFound = NO;
+    NSArray *stores = [self.dataSource.lists allKeys];
+    NSArray *itemsInStore;
+    
     if (![self.item.name isEqualToString:self.itemNameTextField.text]) {
-        for (NSMutableArray *store in [self.dataSource.lists allKeys]) {
-            for (ShoppingItem *item in self.dataSource.lists[store]) {
-                if ([item.name isEqualToString:self.itemNameTextField.text]) itemFound = YES;
-                if (itemFound) break;
-            }
-            if (itemFound) {
-                UIAlertView *itemExistsInThisListAlert = [[UIAlertView alloc]
-                                                          initWithTitle:@"Item Already Exists!"
-                                                          message:[NSString stringWithFormat:@"This item is already in %@ list.", store]
-                                                          delegate:nil
-                                                          cancelButtonTitle:@"OK"
-                                                          otherButtonTitles:nil];
-                [itemExistsInThisListAlert show];
-                return NO;
+        for (NSMutableArray *store in stores) {
+            itemsInStore = self.dataSource.lists[store];
+            for (ShoppingItem *item in itemsInStore) {
+                if ([item.name isEqualToString:self.itemNameTextField.text]) {
+                    UIAlertView *itemExistsInThisListAlert = [[UIAlertView alloc]
+                                                              initWithTitle:@"Item Already Exists!"
+                                                              message:[NSString stringWithFormat:@"This item is already in %@ list.", store]
+                                                              delegate:nil
+                                                              cancelButtonTitle:@"OK"
+                                                              otherButtonTitles:nil];
+                    [itemExistsInThisListAlert show];
+                    return NO;
+                }
             }
         }
     }
     
     return YES;
+}
+
+- (void)playItemNameRequiredAnimation {
+    NSAttributedString *redAttributedString = [ShoppingItemViewController redItemNamePlaceholderAttributedString];
+    NSAttributedString *grayAttributedString = [ShoppingItemViewController grayItemNamePlaceholderAttributedString];
+    
+    [self setItemNamePlaceholderWithAttributedString:grayAttributedString];
+    [self performSelector:@selector(setItemNamePlaceholderWithAttributedString:) withObject:redAttributedString afterDelay:0.2f];
+    [self performSelector:@selector(setItemNamePlaceholderWithAttributedString:) withObject:grayAttributedString afterDelay:0.4f];
+    [self performSelector:@selector(setItemNamePlaceholderWithAttributedString:) withObject:redAttributedString afterDelay:0.6f];
+}
+
++ (NSAttributedString *)redItemNamePlaceholderAttributedString {
+    UIColor *lightRedColor = [UIColor colorWithRed:1.0f green:0.0 blue:0.0 alpha:0.5f];
+    return [ShoppingItemViewController itemNamePlaceholderAttributedStringWithColor:lightRedColor];
+}
+
++ (NSAttributedString *)grayItemNamePlaceholderAttributedString {
+    UIColor *lightGrayColor = [UIColor colorWithRed:0.0f green:0.0f blue:0.0f alpha:0.5f];
+    return [ShoppingItemViewController itemNamePlaceholderAttributedStringWithColor:lightGrayColor];
+}
+
++ (NSAttributedString *)itemNamePlaceholderAttributedStringWithColor:(UIColor *)color {
+    NSString *placeholderString = @"Required";
+    UIFont *font = [UIFont fontWithName:@"HelveticaNeue-Italic" size:14.0f];
+    NSDictionary *attributes = @{NSFontAttributeName : font, NSForegroundColorAttributeName : color};
+    
+    return  [[NSAttributedString alloc] initWithString:placeholderString attributes:attributes];
+}
+
+- (void)setItemNamePlaceholderWithAttributedString:(NSAttributedString *)attributedString {
+    self.itemNameTextField.attributedPlaceholder = attributedString;
 }
 
 - (void)moveToNewStore //-----Could move to DataSourceController-----
