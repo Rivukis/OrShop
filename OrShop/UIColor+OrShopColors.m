@@ -30,4 +30,9 @@
     return [UIColor colorWithRed:0.94 green:0.28 blue:0.21 alpha:0.75]; // Flamingo
 }
 
++ (UIColor *)highlightedCellColor {
+    CGFloat floatNumber = 0.85f;
+    return [UIColor colorWithRed:floatNumber green:floatNumber blue:floatNumber alpha:1.0f];
+}
+
 @end

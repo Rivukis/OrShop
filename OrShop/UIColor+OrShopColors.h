@@ -16,4 +16,6 @@
 + (UIColor *)warmColor;
 + (UIColor *)hotColor;
 
++ (UIColor *)highlightedCellColor;
+
 @end

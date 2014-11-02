@@ -34,6 +34,7 @@ const BOOL usePlist = YES;
 - (void)moveItemsFromStoreName:(NSString *)fromStoreName toStoreName:(NSString *)toStoreName {
     NSMutableArray *fromStoreList = self.lists[fromStoreName];
     NSMutableArray *toStoreList = self.lists[toStoreName];
+    if (!toStoreList) toStoreList = [NSMutableArray new];
     
     for (ShoppingItem *item in fromStoreList) {
         item.preferredStore = toStoreName;

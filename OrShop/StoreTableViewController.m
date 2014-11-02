@@ -10,6 +10,7 @@
 #import "ShoppingListTableViewController.h"
 #import "ShoppingItemViewController.h"
 #import "DataSourceController.h"
+#import "UIColor+OrShopColors.h"
 
 @interface StoreTableViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate>
 
@@ -78,8 +79,20 @@
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
         self.currentCellIndex = indexPath;
+        [self selecteCurrentCell];
+        [tableView setEditing:NO animated:YES];
         [self.actionMenu show];
     }
+}
+
+- (void)selecteCurrentCell {
+    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:self.currentCellIndex];
+    cell.backgroundColor = [UIColor highlightedCellColor];
+}
+
+- (void)unselectCurrentCell {
+    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:self.currentCellIndex];
+    cell.backgroundColor = [UIColor whiteColor];
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForDeleteConfirmationButtonForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -110,7 +123,7 @@
 - (void)actionMenuAlertViewClickedButtonAtIndex:(NSInteger)buttonIndex {
     // Never Mind Button Selected
     if (buttonIndex == 0) {
-        [self.tableView setEditing:NO animated:YES];
+        [self unselectCurrentCell];
     }
     // Delete Button Selected
     else if (buttonIndex == 1) {
@@ -127,48 +140,43 @@
 - (void)MoveListAlertViewClickedButtonAtIndex:(NSInteger)buttonIndex {
     // Never Mind Button Selected
     if (buttonIndex == 0) {
-        [self.tableView setEditing:NO animated:YES];
+        [self unselectCurrentCell];
     }
     // Move All Items in oldStoreList to newStoreList && Save
     else if (buttonIndex == 1) {
         NSString *oldStoreName = self.storeNames[self.currentCellIndex.row];
-//        NSMutableArray *oldStoreList = self.dataSource.lists[oldStoreName];
         NSString *newStoreName = [self.moveListAlert textFieldAtIndex:0].text;
         if ([newStoreName isEqualToString:@""]) newStoreName = [DataSourceController stringWithNoStoreName];
         
         // Check If Store Names Are the Same
         if ([newStoreName isEqualToString:oldStoreName]) {
-            [self.tableView setEditing:NO animated:YES];
+            [self unselectCurrentCell];
             return;
         }
-        // Create || Access newStoreList
-//        NSMutableArray *newStoreList = self.dataSource.lists[newStoreName];
-//        if (!newStoreList) newStoreList = [NSMutableArray new];
         
         // Move Items, Save Data, && Reload Table
         [self.dataSource moveItemsFromStoreName:oldStoreName toStoreName:newStoreName];
-        
-//        newStoreList = [[newStoreList arrayByAddingObjectsFromArray:oldStoreList] mutableCopy];
-//        [self.dataSource.lists setObject:newStoreList forKey:newStoreName];
-//        [self.dataSource.lists removeObjectForKey:oldStoreName];
-//        [self.dataSource addToStoreNamesUsedString:newStoreName];
         [self.dataSource save];
-        [self.tableView reloadData];
+        
+        NSIndexPath *newIndexPath = [NSIndexPath indexPathForRow:[self.storeNames indexOfObject:newStoreName] inSection:0];
+        [self unselectCurrentCell];
+        [self.tableView moveRowAtIndexPath:self.currentCellIndex toIndexPath:newIndexPath];
+        UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:newIndexPath];
+        cell.textLabel.text = newStoreName;
     }
 }
 
 - (void)confirmDeletionAlertViewClickedButtonAtIndex:(NSInteger)buttonIndex {
     // Keep Button Selected
     if (buttonIndex == 0) {
-        [self.tableView setEditing:NO animated:YES];
+        [self unselectCurrentCell];
     }
     // Delete Button Selected
     else if (buttonIndex == 1) {
         NSString *storeName = self.storeNames[self.currentCellIndex.row];
         [self.dataSource.lists removeObjectForKey:storeName];
         [self.dataSource save];
-        [self.tableView setEditing:NO animated:YES];
-        [self.tableView deleteRowsAtIndexPaths:@[self.currentCellIndex] withRowAnimation:UITableViewRowAnimationMiddle];
+        [self.tableView deleteRowsAtIndexPaths:@[self.currentCellIndex] withRowAnimation:UITableViewRowAnimationLeft];
     }
 }
 
@@ -190,7 +198,7 @@
 - (UIAlertView *)actionMenu
 {
     if (!_actionMenuAlert) {
-        _actionMenuAlert= [[UIAlertView alloc] initWithTitle:@"Actions" message:@"What would you like to do?" delegate:self cancelButtonTitle:@"Never Mind" otherButtonTitles:@"Delete", @"Move", nil];
+        _actionMenuAlert= [[UIAlertView alloc] initWithTitle:@"Actions" message:@"What would you like to do?" delegate:self cancelButtonTitle:@"Never Mind" otherButtonTitles:@"Delete List", @"Move Items", nil];
     }
     return _actionMenuAlert;
 }
@@ -198,7 +206,7 @@
 - (UIAlertView *)moveListAlert
 {
     if (!_moveListAlert) {
-        _moveListAlert = [[UIAlertView alloc] initWithTitle:@"Move All Items" message:@"All items in this list will be moved to the list typed below" delegate:self cancelButtonTitle:@"Never Mind" otherButtonTitles:@"Move", nil];
+        _moveListAlert = [[UIAlertView alloc] initWithTitle:@"Move All Items" message:@"All items in this list will be moved to the list typed below" delegate:self cancelButtonTitle:@"Never Mind" otherButtonTitles:@"Move Items", nil];
         _moveListAlert.alertViewStyle = UIAlertViewStylePlainTextInput;
         
         UITextField *textField = [_moveListAlert textFieldAtIndex:0];

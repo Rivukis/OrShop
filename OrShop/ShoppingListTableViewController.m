@@ -10,6 +10,7 @@
 #import "ShoppingItemCell.h"
 #import "ShoppingItemViewController.h"
 #import "DataSourceController.h"
+#import "UIColor+OrShopColors.h"
 
 @interface ShoppingListTableViewController () <UITableViewDelegate>
 
@@ -450,8 +451,9 @@
     if (editingStyle == UITableViewCellEditingStyleDelete) {
         self.currentCellIndex = indexPath;
         [self.confirmDeleteAlert show];
-    } else {
-        
+        UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+        cell.backgroundColor = [UIColor highlightedCellColor];
+        [self.tableView setEditing:NO animated:YES];
     }
 }
 
@@ -465,7 +467,8 @@
     if (alertView == self.confirmDeleteAlert) {
         // Never Mind Button Selected
         if (buttonIndex == 0) {
-            [self.tableView setEditing:NO animated:YES];
+            UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:self.currentCellIndex];
+            cell.backgroundColor = [UIColor whiteColor];
             
         // Delete Button Selected
         } else if (buttonIndex == 1) {
@@ -480,8 +483,7 @@
             
             // Delete Item from tableView
             [currentSubList removeObject:item];
-            [self.tableView setEditing:NO animated:YES];
-            [self.tableView deleteRowsAtIndexPaths:@[self.currentCellIndex] withRowAnimation:UITableViewRowAnimationMiddle];
+            [self.tableView deleteRowsAtIndexPaths:@[self.currentCellIndex] withRowAnimation:UITableViewRowAnimationLeft];
             
             // Pop View If No Items In Store List
             if (self.needItems.count == 0 && self.haveItems.count == 0) [self.navigationController popViewControllerAnimated:YES];
