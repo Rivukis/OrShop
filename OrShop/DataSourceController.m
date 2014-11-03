@@ -89,7 +89,6 @@ const BOOL usePlist = YES;
 - (id)objectWithClass:(Class)class fromSavedPlistString:(NSString *)savedPlistString orFromBundlePlist:(NSString *)bundlePlistString usingConstructorSelector:(SEL)selector {
     id retrievedObject;
     NSString *plistDocPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:savedPlistString];
-    
     if ([DataSourceController checkForPlistFileInDocs:savedPlistString]) {
         retrievedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:plistDocPath];
     } else {
