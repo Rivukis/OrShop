@@ -200,9 +200,7 @@
     if ([self canItemBeSaved]) {
         if ([self.preferredStoreTextField.text isEqualToString:@""]) self.preferredStoreTextField.text = [DataSourceController stringWithNoStoreName];
         if (![self.item.preferredStore isEqualToString:self.preferredStoreTextField.text]) [self moveToNewStore];
-        
-        //        if ([self.preferredStoreTextField.text isEqualToString:@""]) self.item.preferredStore = @"(no store)";
-        //            else self.item.preferredStore = self.preferredStoreTextField.text;
+        [self.dataSource removeFromItemNamesUsed:self.item.name];
         
         self.item.preferredStore = self.preferredStoreTextField.text;
         self.item.name = self.itemNameTextField.text;
@@ -211,8 +209,8 @@
         self.item.notes = self.notesTextField.text;
         
         // Add To Auto-Complete Lists
-        [self.dataSource addToStoreNamesUsedString:self.item.preferredStore];
-        [self.dataSource addToItemNamesUsedString:self.item.name];
+        [self.dataSource addToStoreNamesUsed:self.item.preferredStore];
+        [self.dataSource addToItemNamesUsed:self.item.name];
         
         [self.dataSource save];
         [self.navigationController popViewControllerAnimated:YES];

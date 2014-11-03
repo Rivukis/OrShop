@@ -19,8 +19,10 @@
 @property (strong, nonatomic) NSMutableArray *itemsSortList; // of NSString
 
 - (void)save;
-- (void)addToStoreNamesUsedString:(NSString *)storeName;
-- (void)addToItemNamesUsedString:(NSString *)itemName;
+- (void)addToStoreNamesUsed:(NSString *)storeName;
+- (void)addToItemNamesUsed:(NSString *)itemName;
+- (void)removeFromStoreNamesUsed:(NSString *)storeName;
+- (void)removeFromItemNamesUsed:(NSString *)itemName;
 - (void)moveItemsFromStoreName:(NSString *)fromStoreName toStoreName:(NSString *)toStoreName;
 
 + (NSString *)stringWithNoStoreName;
