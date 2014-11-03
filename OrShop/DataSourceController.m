@@ -13,7 +13,7 @@
 
 const BOOL usePlist = YES;
 
-- (void)addToStoreNamesUsedString:(NSString *)storeName
+- (void)addToStoreNamesUsed:(NSString *)storeName
 {
     if (![self.storeNamesUsed containsObject:storeName] && ![storeName isEqualToString:[DataSourceController stringWithNoStoreName]]) {
         self.storeNamesUsed = [[self.storeNamesUsed
@@ -22,12 +22,28 @@ const BOOL usePlist = YES;
     }
 }
 
-- (void)addToItemNamesUsedString:(NSString *)itemName
+- (void)addToItemNamesUsed:(NSString *)itemName
 {
-    if (![self.itemNamesUsed containsObject:itemName]) {
+    if (![self.itemNamesUsed containsObject:itemName] && ![itemName isEqualToString:@""]) {
         self.itemNamesUsed = [[self.itemNamesUsed
                                arrayByAddingObject:itemName]
                               sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+    }
+}
+
+- (void)removeFromStoreNamesUsed:(NSString *)storeName {
+    if ([self.storeNamesUsed containsObject:storeName] && ![storeName isEqualToString:[DataSourceController stringWithNoStoreName]]) {
+        NSMutableArray *tempArray = [self.storeNamesUsed mutableCopy];
+        [tempArray removeObject:storeName];
+        self.storeNamesUsed = [tempArray copy];
+    }
+}
+
+- (void)removeFromItemNamesUsed:(NSString *)itemName {
+    if ([self.itemNamesUsed containsObject:itemName] && ![itemName isEqualToString:@""]) {
+        NSMutableArray *tempArray = [self.itemNamesUsed mutableCopy];
+        [tempArray removeObject:itemName];
+        self.itemNamesUsed = [tempArray copy];
     }
 }
 
@@ -43,8 +59,17 @@ const BOOL usePlist = YES;
     toStoreList = [[toStoreList arrayByAddingObjectsFromArray:fromStoreList] mutableCopy];
     [self.lists setObject:toStoreList forKey:toStoreName];
     [self.lists removeObjectForKey:fromStoreName];
-    [self addToStoreNamesUsedString:toStoreName];
+    [self addToStoreNamesUsed:toStoreName];
 }
+
++ (NSString *)stringWithNoStoreName
+{
+    return @"(no preffered store)";
+}
+
+
+#pragma mark - Saving and Retrieving Methods
+
 
 - (void)save
 {
@@ -61,10 +86,38 @@ const BOOL usePlist = YES;
     [NSKeyedArchiver archiveRootObject:self.itemsSortList toFile:itemsSortListPlistPath];
 }
 
+- (id)objectWithClass:(Class)class fromSavedPlistString:(NSString *)savedPlistString orFromBundlePlist:(NSString *)bundlePlistString usingSelector:(SEL)selector {
+    id retrievedObject;
+    NSString *plistDocPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:savedPlistString];
+    if ([DataSourceController checkForPlistFileInDocs:savedPlistString]) {
+        retrievedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:plistDocPath];
+    } else {
+        if (usePlist) {
+            NSString *bundlePath = [[NSBundle mainBundle] pathForResource:@"ShoppingList" ofType:@"plist"];
+            NSDictionary *rootDictionary = [[NSDictionary alloc] initWithContentsOfFile:bundlePath];
+            id subDirectory = rootDictionary[bundlePlistString];
+            
+            NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[self methodSignatureForSelector:selector]];
+            [invocation setSelector:selector];
+            [invocation setTarget:self];
+            [invocation setArgument:&(subDirectory) atIndex:2];
+            
+            [invocation invoke];
+            void *tempResults;
+            [invocation getReturnValue:&tempResults];
+            retrievedObject = (__bridge id)tempResults;
+        } else {
+            retrievedObject = [[class alloc] init];
+        }
+        [NSKeyedArchiver archiveRootObject:retrievedObject toFile:plistDocPath];
+    }
+    
+    return retrievedObject;
+}
+
 + (BOOL)checkForPlistFileInDocs:(NSString*)fileName
 {
     NSFileManager *myManager = [NSFileManager defaultManager];
-//    NSString *pathForPlistInBundle = [[NSBundle mainBundle] pathForResource:@"people" ofType:@"plist"];
     NSString *pathForPlistInDocs = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:fileName];
     
     return [myManager fileExistsAtPath:pathForPlistInDocs];
@@ -75,9 +128,53 @@ const BOOL usePlist = YES;
     return [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
 }
 
-+ (NSString *)stringWithNoStoreName
-{
-    return @"(no preffered store)";
+
+#pragma mark - Property Specific Plist Architecture Methods
+
+
+- (NSMutableDictionary *)listsFromBundleArray:(NSDictionary *)bundleDictionary {
+    NSMutableDictionary *lists = [NSMutableDictionary new];
+    for (NSString *storeName in [bundleDictionary allKeys]) {
+        NSMutableArray *items = [NSMutableArray new];
+        
+        for (NSDictionary *plistItem in bundleDictionary[storeName]) {
+            ShoppingItem *item = [ShoppingItem new];
+            item.name = plistItem[@"Name"];
+            item.amountNeeded = [plistItem[@"AmountNeeded"] intValue];
+            item.tempAtPurchase = [plistItem[@"TempAtPurchase"] intValue];
+            item.notes = plistItem[@"Notes"];
+            item.preferredStore = storeName;
+            
+            [items addObject:item];
+        }
+        [lists setObject:items forKey:storeName];
+    }
+    
+    return lists;
+}
+
+- (NSArray *)storeNamesUsedFromBundleArray:(NSArray *)bundleArray {
+    NSMutableArray *tempArray = [NSMutableArray new];
+    for (NSString *storeName in bundleArray) {
+        [tempArray addObject:storeName];
+    }
+    return [tempArray copy];
+}
+
+- (NSArray *)itemNamesUsedFromBundleArray:(NSArray *)bundleArray {
+    NSMutableArray *tempArray = [NSMutableArray new];
+    for (NSString *itemName in bundleArray) {
+        [tempArray addObject:itemName];
+    }
+    return [tempArray copy];
+}
+
+- (NSMutableArray *)itemsSortListFromBundleArray:(NSArray *)bundleArray {
+    NSMutableArray *itemsSortList = [NSMutableArray new];
+    for (NSString *itemName in bundleArray) {
+        [itemsSortList addObject:itemName];
+    }
+    return itemsSortList;
 }
 
 
@@ -87,37 +184,10 @@ const BOOL usePlist = YES;
 - (NSMutableDictionary *)lists
 {
     if (!_lists) {
-        
-        NSString *plistDocPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:@"lists.plist"];
-        
-        if ([DataSourceController checkForPlistFileInDocs:@"lists.plist"]) {
-            // Load from Archived Plist
-            _lists = [NSKeyedUnarchiver unarchiveObjectWithFile:plistDocPath];
-        } else {
-            _lists = [NSMutableDictionary new];
-            if (usePlist) {
-                // Load from Manually Created Plist
-                NSString *pathBundle = [[NSBundle mainBundle] pathForResource:@"ShoppingList" ofType:@"plist"];
-                NSDictionary *rootDictionary = [[NSDictionary alloc] initWithContentsOfFile:pathBundle];
-                
-                for (NSString *storeName in [rootDictionary[@"SampleLists"] allKeys]) {
-                    NSMutableArray *items = [NSMutableArray new];
-                    
-                    for (NSDictionary *plistItem in rootDictionary[@"SampleLists"][storeName]) {
-                        ShoppingItem *item = [ShoppingItem new];
-                        item.name = plistItem[@"Name"];
-                        item.amountNeeded = [plistItem[@"AmountNeeded"] intValue];
-                        item.tempAtPurchase = [plistItem[@"TempAtPurchase"] intValue];
-                        item.notes = plistItem[@"Notes"];
-                        item.preferredStore = storeName;
-                        
-                        [items addObject:item];
-                    }
-                    [_lists setObject:items forKey:storeName];
-                }
-            }
-            [NSKeyedArchiver archiveRootObject:_lists toFile:plistDocPath];
-        }
+        _lists = [self objectWithClass:[NSMutableDictionary class]
+                  fromSavedPlistString:@"lists.plist"
+                     orFromBundlePlist:@"SampleLists"
+                         usingSelector:@selector(listsFromBundleArray:)];
     }
     
     return _lists;
@@ -126,54 +196,22 @@ const BOOL usePlist = YES;
 - (NSArray *)storeNamesUsed
 {
     if (!_storeNamesUsed) {
-        
-        NSString *plistDocPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:@"storeNamesUsed.plist"];
-        
-        if ([DataSourceController checkForPlistFileInDocs:@"storeNamesUsed.plist"]) {
-            // Load from Archived Plist
-            _storeNamesUsed = [NSKeyedUnarchiver unarchiveObjectWithFile:plistDocPath];
-        } else {
-            _storeNamesUsed = [NSArray new];
-            if (usePlist) {
-                // Load from Manually Created Plist
-                NSString *pathBundle = [[NSBundle mainBundle] pathForResource:@"ShoppingList" ofType:@"plist"];
-                NSDictionary *rootDictionary = [[NSDictionary alloc] initWithContentsOfFile:pathBundle];
-                NSMutableArray *tempArray = [NSMutableArray new];
-                
-                for (NSString *storeName in rootDictionary[@"StoreNamesUsed"])
-                    [tempArray addObject:storeName];
-                
-                _storeNamesUsed = [tempArray copy];
-            }
-            [NSKeyedArchiver archiveRootObject:_storeNamesUsed toFile:plistDocPath];
-        }
+        _storeNamesUsed = [self objectWithClass:[NSArray class]
+                           fromSavedPlistString:@"storeNamesUsed.plist"
+                              orFromBundlePlist:@"StoreNamesUsed"
+                                  usingSelector:@selector(storeNamesUsedFromBundleArray:)];
     }
+    
     return _storeNamesUsed;
 }
 
 - (NSArray *)itemNamesUsed
 {
     if (!_itemNamesUsed) {
-        NSString *plistDocPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:@"itemNamesUsed.plist"];
-        
-        if ([DataSourceController checkForPlistFileInDocs:@"itemNamesUsed.plist"]) {
-            // Load from Archived Plist
-            _itemNamesUsed = [NSKeyedUnarchiver unarchiveObjectWithFile:plistDocPath];
-        } else {
-            _itemNamesUsed = [NSArray new];
-            if (usePlist) {
-                // Load from Manually Created Plist
-                NSString *pathBundle = [[NSBundle mainBundle] pathForResource:@"ShoppingList" ofType:@"plist"];
-                NSDictionary *rootDictionary = [[NSDictionary alloc] initWithContentsOfFile:pathBundle];
-                NSMutableArray *tempArray = [NSMutableArray new];
-                
-                for (NSString *itemName in rootDictionary[@"ItemNamesUsed"])
-                    [tempArray addObject:itemName];
-                
-                _itemNamesUsed = [tempArray copy];
-            }
-            [NSKeyedArchiver archiveRootObject:_itemNamesUsed toFile:plistDocPath];
-        }
+        _itemNamesUsed = [self objectWithClass:[NSArray class]
+                          fromSavedPlistString:@"itemNamesUsed.plist"
+                             orFromBundlePlist:@"ItemNamesUsed"
+                                 usingSelector:@selector(itemNamesUsedFromBundleArray:)];
     }
     
     return _itemNamesUsed;
@@ -182,25 +220,10 @@ const BOOL usePlist = YES;
 - (NSMutableArray *)itemsSortList
 {
     if (!_itemsSortList) {
-        _itemsSortList = [NSMutableArray new];
-        NSString *plistDocPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:@"itemsSortList.plist"];
-        
-        if ([DataSourceController checkForPlistFileInDocs:@"itemsSortList.plist"]) {
-            // Load from Archived Plist
-            _itemsSortList = [NSKeyedUnarchiver unarchiveObjectWithFile:plistDocPath];
-        } else {
-            _itemsSortList = [NSMutableArray new];
-            if (usePlist) {
-                // Load from Manually Created Plist
-                NSString *pathBundle = [[NSBundle mainBundle] pathForResource:@"ShoppingList"
-                                                                       ofType:@"plist"];
-                NSDictionary *rootDictionary = [[NSDictionary alloc] initWithContentsOfFile:pathBundle];
-                
-                for (NSString *itemName in rootDictionary[@"ItemsSortList"])
-                    [_itemsSortList addObject:itemName];
-            }
-            [NSKeyedArchiver archiveRootObject:_itemsSortList toFile:plistDocPath];
-        }
+        _itemsSortList = [self objectWithClass:[NSMutableArray class]
+                          fromSavedPlistString:@"itemsSortList.plist"
+                             orFromBundlePlist:@"ItemsSortList"
+                                 usingSelector:@selector(itemsSortListFromBundleArray:)];
     }
     
     return _itemsSortList;
