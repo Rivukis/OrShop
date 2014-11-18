@@ -303,7 +303,7 @@
                     lastItemSortListIndex = aboveDataSourceItemIndex;
                 }
                 break;
-            case 7: // All Items
+            case 7: // Below && Above && Current Items
                 if (currentDataSourceItemIndex < belowDataSourceItemIndex) { // This Will NEVER Be True
                     tempName = sortList[belowDataSourceItemIndex];
                     [sortList removeObjectAtIndex:belowDataSourceItemIndex];
@@ -343,39 +343,6 @@
 }
 
 
-#pragma mark - User Inputs
-
-
-//- (IBAction)checkOrUncheckButton:(UIButton *)sender {
-//    
-//    UITableViewCell *selectedCell = [self.tableView cellForRowAtIndexPath:[self.tableView indexPathForSelectedRow]];
-//    NSLog(@"selected cell: %@", selectedCell.description);
-//    
-//    UITableViewCell *cell = (UITableViewCell *)sender.superview.superview.superview;
-//    UITableView *table = (UITableView *)cell.superview.superview;
-//    NSIndexPath* indexPath = [table indexPathForCell:cell];
-//    ShoppingItem *item = (indexPath.section == 0) ? self.needItems[indexPath.row] : self.haveItems[indexPath.row];
-//    
-//    if (item.isChecked) {
-//        item.isChecked = NO;
-//        NSMutableArray *tempArray = [NSMutableArray new];
-//        for (ShoppingItem *itemAgain in self.dataSource.lists[self.storeName]) if (itemAgain.isChecked) [tempArray addObject:itemAgain];
-//        
-//        NSSortDescriptor *haveSorter = [[NSSortDescriptor alloc] initWithKey:@"checkedOrder" ascending:YES];
-//        [tempArray sortUsingDescriptors:@[haveSorter]];
-//        
-//        for (ShoppingItem *itemAgain in tempArray) itemAgain.checkedOrder = [tempArray indexOfObject:itemAgain];
-//    } else {
-//        item.isChecked = YES;
-//        item.checkedOrder = 0;
-//        
-//        for (ShoppingItem *itemAgain in self.dataSource.lists[self.storeName]) if (itemAgain.isChecked) item.checkedOrder++;
-//    }
-////    [table reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-//    [table reloadData];
-//}
-
-
 #pragma mark - UITableView Delegate && DataSource
 
 
@@ -391,30 +358,38 @@
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
 {
-    NSString *sectionTitle;
+    NSString *sectionTitle = @"";
     if (section == 0) {
         sectionTitle = @"NEED";
     } else if (section == 1) {
         sectionTitle = @"HAVE";
-    } else {
-        sectionTitle = @"";
     }
+    
     return sectionTitle;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     ShoppingItem *item = (indexPath.section == 0) ? self.needItems[indexPath.row] : self.haveItems[indexPath.row];
-    ShoppingItemCell *cell = ([item.notes isEqualToString:@""]) ? [tableView dequeueReusableCellWithIdentifier:@"ItemCell" forIndexPath:indexPath] : [tableView dequeueReusableCellWithIdentifier:@"ItemCellWithNotes" forIndexPath:indexPath];
+    ShoppingItemCell *cell;
+    if ([item.notes isEqualToString:@""]) {
+        cell = [tableView dequeueReusableCellWithIdentifier:@"ItemCell" forIndexPath:indexPath];
+    } else {
+        cell = [tableView dequeueReusableCellWithIdentifier:@"ItemCellWithNotes" forIndexPath:indexPath];
+    }
     
     cell.itemNameLabel.text = [NSString stringWithFormat:@"(%lu) %@", (unsigned long)item.amountNeeded, item.name];
     cell.itemNotesLabel.text = item.notes;
-    cell.checkboxImage.image = item.isChecked ? [UIImage imageNamed: @"Checked_Checkbox"] : [UIImage imageNamed: @"Unchecked_Checkbox"];
+    NSString *checkboxImageName = item.isChecked ? @"Checked_Checkbox" : @"Unchecked_Checkbox";
+    cell.checkboxImage.image = [UIImage imageNamed:checkboxImageName];
+    cell.selectedBackgroundView.backgroundColor = [UIColor yellowColor];
     cell.backgroundColor = item.colorFromTemp;
     
-    
-//    cell.accessoryTy
     return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return 44.0f;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -435,9 +410,8 @@
         for (ShoppingItem *checkedItem in tempArray) checkedItem.checkedOrder = [tempArray indexOfObject:checkedItem];
     }
     
-    
-    //    [table reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    [tableView reloadData];
+    [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+//    [tableView reloadData];
 }
 
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath
@@ -463,15 +437,11 @@
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    // Confirm Deletion
     if (alertView == self.confirmDeleteAlert) {
-        // Never Mind Button Selected
-        if (buttonIndex == 0) {
+        if (buttonIndex == 0) { // Never Mind Button
             UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:self.currentCellIndex];
             cell.backgroundColor = [UIColor whiteColor];
-            
-        // Delete Button Selected
-        } else if (buttonIndex == 1) {
+        } else if (buttonIndex == 1) { // Delete Button
             NSMutableArray *storeList = self.dataSource.lists[self.storeName];
             NSMutableArray *currentSubList = (self.currentCellIndex.section == 0) ? self.needItems : self.haveItems;
             ShoppingItem *item = currentSubList[self.currentCellIndex.row];
@@ -543,7 +513,6 @@
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
-//    if ([segue.identifier isEqualToString:@"ToItemA"] || [segue.identifier isEqualToString:@"ToItemB"]) {
     if ([segue.identifier isEqualToString:@"ToItem"]) {
         ShoppingItemViewController *destVC = segue.destinationViewController;
         NSIndexPath *indexPath = self.currentCellIndex;

@@ -76,16 +76,20 @@
     return cell;
 }
 
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return 44.0f;
+}
+
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
         self.currentCellIndex = indexPath;
-        [self selecteCurrentCell];
+        [self selectCurrentCell];
         [tableView setEditing:NO animated:YES];
         [self.actionMenu show];
     }
 }
 
-- (void)selecteCurrentCell {
+- (void)selectCurrentCell {
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:self.currentCellIndex];
     cell.backgroundColor = [UIColor highlightedCellColor];
 }
