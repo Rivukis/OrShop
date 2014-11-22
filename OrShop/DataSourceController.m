@@ -8,23 +8,42 @@
 
 #import "DataSourceController.h"
 #import "ShoppingItem.h"
+#import "NSArray+StringHelper.h"
 
 @implementation DataSourceController
 
 const BOOL usePlist = YES;
 
-- (void)addToStoreNamesUsed:(NSString *)storeName
-{
-    if (![self.storeNamesUsed containsObject:storeName] && ![storeName isEqualToString:[DataSourceController stringWithNoStoreName]]) {
+- (NSString *)storeNameForItemName:(NSString *)itemName {
+    NSString *storeName = @"";
+    NSMutableArray *items;
+    BOOL shouldBreakOut = NO;
+    
+    for (NSString *store in [self.lists allKeys]) {
+        items = self.lists[store];
+        for (ShoppingItem *item in items) {
+            if ([item.name.lowercaseString isEqualToString:itemName.lowercaseString]) {
+                storeName = store;
+                shouldBreakOut = YES;
+                break;
+            }
+        }
+        if (shouldBreakOut) break;
+    }
+    
+    return storeName;
+}
+
+- (void)addToStoreNamesUsed:(NSString *)storeName {
+    if (![self.storeNamesUsed containsString:storeName caseSensitive:NO] && ![storeName isEqualToString:[DataSourceController stringWithNoStoreName]]) {
         self.storeNamesUsed = [[self.storeNamesUsed
                                 arrayByAddingObject:storeName]
                                sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
     }
 }
 
-- (void)addToItemNamesUsed:(NSString *)itemName
-{
-    if (![self.itemNamesUsed containsObject:itemName] && ![itemName isEqualToString:@""]) {
+- (void)addToItemNamesUsed:(NSString *)itemName {
+    if (![self.itemNamesUsed containsString:itemName caseSensitive:NO] && ![itemName isEqualToString:@""]) {
         self.itemNamesUsed = [[self.itemNamesUsed
                                arrayByAddingObject:itemName]
                               sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
@@ -32,17 +51,17 @@ const BOOL usePlist = YES;
 }
 
 - (void)removeFromStoreNamesUsed:(NSString *)storeName {
-    if ([self.storeNamesUsed containsObject:storeName] && ![storeName isEqualToString:[DataSourceController stringWithNoStoreName]]) {
+    if ([self.storeNamesUsed containsString:storeName caseSensitive:NO] && ![storeName isEqualToString:[DataSourceController stringWithNoStoreName]]) {
         NSMutableArray *tempArray = [self.storeNamesUsed mutableCopy];
-        [tempArray removeObject:storeName];
+        [tempArray removeString:storeName caseSensitive:NO];
         self.storeNamesUsed = [tempArray copy];
     }
 }
 
 - (void)removeFromItemNamesUsed:(NSString *)itemName {
-    if ([self.itemNamesUsed containsObject:itemName] && ![itemName isEqualToString:@""]) {
+    if ([self.itemNamesUsed containsString:itemName caseSensitive:NO] && ![itemName isEqualToString:@""]) {
         NSMutableArray *tempArray = [self.itemNamesUsed mutableCopy];
-        [tempArray removeObject:itemName];
+        [tempArray removeString:itemName caseSensitive:NO];
         self.itemNamesUsed = [tempArray copy];
     }
 }
@@ -62,17 +81,34 @@ const BOOL usePlist = YES;
     [self addToStoreNamesUsed:toStoreName];
 }
 
-+ (NSString *)stringWithNoStoreName
-{
-    return @"(no preffered store)";
+- (void)moveItem:(ShoppingItem *)item fromStore:(NSString *)fromStoreName toStore:(NSString *)toStoreName {
+    NSMutableArray *fromStoreList = self.lists[fromStoreName];
+    NSMutableArray *toStoreList;
+    item.isChecked = NO;
+    
+    toStoreList = self.lists[toStoreName];
+    if (!toStoreList) {
+        toStoreList = [NSMutableArray new];
+        self.lists[toStoreName] = toStoreList;
+    }
+    
+    [toStoreList addObject:item];
+    [fromStoreList removeObject:item];
+    if (fromStoreList.count == 0) {
+        [self.lists removeObjectForKey:fromStoreName];
+    }
+}
+
++ (NSString *)stringWithNoStoreName {
+//    return @"(no preffered store)";
+    return @"Miscellaneous Items";
 }
 
 
 #pragma mark - Saving and Retrieving Methods
 
 
-- (void)save
-{
+- (void)save {
     NSString *listsPlistPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:@"lists.plist"];
     [NSKeyedArchiver archiveRootObject:self.lists toFile:listsPlistPath];
     
@@ -119,16 +155,14 @@ const BOOL usePlist = YES;
     return retrievedObject;
 }
 
-+ (BOOL)checkForPlistFileInDocs:(NSString*)fileName
-{
++ (BOOL)checkForPlistFileInDocs:(NSString*)fileName {
     NSFileManager *myManager = [NSFileManager defaultManager];
     NSString *pathForPlistInDocs = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:fileName];
     
     return [myManager fileExistsAtPath:pathForPlistInDocs];
 }
 
-+ (NSString *)applicationDocumentsDirectory
-{
++ (NSString *)applicationDocumentsDirectory {
     return [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
 }
 
@@ -161,8 +195,7 @@ const BOOL usePlist = YES;
 #pragma mark - Lazy Instantiation
 
 
-- (NSMutableDictionary *)lists
-{
+- (NSMutableDictionary *)lists {
     if (!_lists) {
         _lists = [self objectWithClass:[NSMutableDictionary class]
                   fromSavedPlistString:@"lists.plist"
@@ -173,8 +206,7 @@ const BOOL usePlist = YES;
     return _lists;
 }
 
-- (NSArray *)storeNamesUsed
-{
+- (NSArray *)storeNamesUsed {
     if (!_storeNamesUsed) {
         _storeNamesUsed = [self objectWithClass:[NSArray class]
                            fromSavedPlistString:@"storeNamesUsed.plist"
@@ -185,8 +217,7 @@ const BOOL usePlist = YES;
     return _storeNamesUsed;
 }
 
-- (NSArray *)itemNamesUsed
-{
+- (NSArray *)itemNamesUsed {
     if (!_itemNamesUsed) {
         _itemNamesUsed = [self objectWithClass:[NSArray class]
                           fromSavedPlistString:@"itemNamesUsed.plist"
@@ -197,8 +228,7 @@ const BOOL usePlist = YES;
     return _itemNamesUsed;
 }
 
-- (NSMutableArray *)itemsSortList
-{
+- (NSMutableArray *)itemsSortList {
     if (!_itemsSortList) {
         _itemsSortList = [self objectWithClass:[NSMutableArray class]
                           fromSavedPlistString:@"itemsSortList.plist"

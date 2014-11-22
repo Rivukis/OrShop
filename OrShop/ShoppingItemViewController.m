@@ -102,8 +102,12 @@
     [self resignKeyboard];
     
     if ([self canItemBeSaved]) {
-        if ([self.preferredStoreTextField.text isEqualToString:@""]) self.preferredStoreTextField.text = [DataSourceController stringWithNoStoreName];
-        if (![self.item.preferredStore isEqualToString:self.preferredStoreTextField.text]) [self moveToNewStore];
+        if ([self.preferredStoreTextField.text isEqualToString:@""]) {
+            self.preferredStoreTextField.text = [DataSourceController stringWithNoStoreName];
+        }
+        if (![self.item.preferredStore isEqualToString:self.preferredStoreTextField.text]) {
+            [self.dataSource moveItem:self.item fromStore:self.item.preferredStore toStore:self.preferredStoreTextField.text];
+        }
         [self.dataSource removeFromItemNamesUsed:self.item.name];
         
         self.item.preferredStore = self.preferredStoreTextField.text;
@@ -121,35 +125,25 @@
     }
 }
 
-// TODO: move canItemBeSaved method to DataSourceController
 - (BOOL)canItemBeSaved
 {
-    // Item Name Empty
     if ([self.itemNameTextField.text isEqualToString:@""]) {
         [self playItemNameRequiredAnimation];
         return NO;
     }
     
-    // Item Name Already Exists
-    NSArray *stores = [self.dataSource.lists allKeys];
-    NSArray *itemsInStore;
-    
-    if (![self.item.name isEqualToString:self.itemNameTextField.text]) {
-        for (NSMutableArray *store in stores) {
-            itemsInStore = self.dataSource.lists[store];
-            for (ShoppingItem *item in itemsInStore) {
-                if ([item.name isEqualToString:self.itemNameTextField.text]) {
-                    NSString *title = @"Item Already Exists!";
-                    NSString *message = [NSString stringWithFormat:@"This item is already in %@ list.", store];
-                    UIAlertView *itemExistsInThisListAlert = [[UIAlertView alloc] initWithTitle:title
-                                                                                        message:message
-                                                                                       delegate:nil
-                                                                              cancelButtonTitle:@"OK"
-                                                                              otherButtonTitles:nil];
-                    [itemExistsInThisListAlert show];
-                    return NO;
-                }
-            }
+    if (![self.item.name.lowercaseString isEqualToString:self.itemNameTextField.text.lowercaseString]) {
+        NSString *itemStoreName = [self.dataSource storeNameForItemName:self.itemNameTextField.text];
+        if (![itemStoreName isEqualToString:@""]) {
+            NSString *title = @"Item Already Exists!";
+            NSString *message = [NSString stringWithFormat:@"This item is already in %@ list.", itemStoreName];
+            UIAlertView *itemExistsInThisListAlert = [[UIAlertView alloc] initWithTitle:title
+                                                                                message:message
+                                                                               delegate:nil
+                                                                      cancelButtonTitle:@"OK"
+                                                                      otherButtonTitles:nil];
+            [itemExistsInThisListAlert show];
+            return NO;
         }
     }
     
@@ -157,31 +151,31 @@
 }
 
 // TODO: move moveToNewStore method to DataSourceController
-- (void)moveToNewStore
-{
-    NSString *oldStoreName = self.item.preferredStore;
-    NSString *newStoreName = self.preferredStoreTextField.text;
-    if ([newStoreName isEqualToString:@""]) newStoreName = [DataSourceController stringWithNoStoreName];
-    NSMutableArray *oldStoreList = self.dataSource.lists[oldStoreName];
-    NSMutableArray *newStoreList;
-    self.item.isChecked = NO;
-    
-    // Get New Store List
-    if ([[self.dataSource.lists allKeys] indexOfObject:newStoreName] == NSNotFound) {
-        newStoreList = [NSMutableArray new];
-        [self.dataSource.lists setObject:newStoreList
-                                  forKey:[NSString stringWithString:newStoreName]];
-    } else {
-        newStoreList = self.dataSource.lists[newStoreName];
-    }
-    
-    // Add Item to New Store List
-    [newStoreList addObject:self.item];
-    
-    // Remove Item From Old Store List
-    [oldStoreList removeObject:self.item];
-    if (!oldStoreList.count) [self.dataSource.lists removeObjectForKey:oldStoreName];
-}
+//- (void)moveToNewStore
+//{
+//    NSString *oldStoreName = self.item.preferredStore;
+//    NSString *newStoreName = self.preferredStoreTextField.text;
+//    if ([newStoreName isEqualToString:@""]) newStoreName = [DataSourceController stringWithNoStoreName];
+//    NSMutableArray *oldStoreList = self.dataSource.lists[oldStoreName];
+//    NSMutableArray *newStoreList;
+//    self.item.isChecked = NO;
+//    
+//    // Get New Store List
+//    if ([[self.dataSource.lists allKeys] indexOfObject:newStoreName] == NSNotFound) {
+//        newStoreList = [NSMutableArray new];
+//        [self.dataSource.lists setObject:newStoreList
+//                                  forKey:[NSString stringWithString:newStoreName]];
+//    } else {
+//        newStoreList = self.dataSource.lists[newStoreName];
+//    }
+//    
+//    // Add Item to New Store List
+//    [newStoreList addObject:self.item];
+//    
+//    // Remove Item From Old Store List
+//    [oldStoreList removeObject:self.item];
+//    if (!oldStoreList.count) [self.dataSource.lists removeObjectForKey:oldStoreName];
+//}
 
 - (void)cancelBarButtonPressed
 {
