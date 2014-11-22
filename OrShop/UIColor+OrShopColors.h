@@ -12,7 +12,7 @@
 
 + (UIColor *)frozenColor;
 + (UIColor *)coldColor;
-+ (UIColor *)roomColor;
++ (UIColor *)ambientColor;
 + (UIColor *)warmColor;
 + (UIColor *)hotColor;
 
