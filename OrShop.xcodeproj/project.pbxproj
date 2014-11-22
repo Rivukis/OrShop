@@ -10,6 +10,8 @@
 		7A1D4F1019100F8E00FF54BF /* AutoCompleteView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7A1D4F0F19100F8E00FF54BF /* AutoCompleteView.xib */; };
 		7A1D4F13191019E800FF54BF /* AutoCompleteView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A1D4F12191019E800FF54BF /* AutoCompleteView.m */; };
 		7A1E0C921A206B65005C8E8A /* NSArray+StringHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A1E0C911A206B65005C8E8A /* NSArray+StringHelper.m */; };
+		7A1E0C951A2143B6005C8E8A /* Item.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A1E0C941A2143B6005C8E8A /* Item.m */; };
+		7A1E0C981A2143C2005C8E8A /* Store.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A1E0C971A2143C2005C8E8A /* Store.m */; };
 		7A4B6CA01A020B4000C66E90 /* UIColor+OrShopColors.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A4B6C9F1A020B4000C66E90 /* UIColor+OrShopColors.m */; };
 		7A7AAF8E18F89BF100A9C799 /* ShoppingItemViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A7AAF8D18F89BF100A9C799 /* ShoppingItemViewController.m */; };
 		7A7AAF9118F89C3500A9C799 /* ShoppingItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A7AAF9018F89C3500A9C799 /* ShoppingItem.m */; };
@@ -49,6 +51,10 @@
 		7A1D4F12191019E800FF54BF /* AutoCompleteView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AutoCompleteView.m; sourceTree = "<group>"; };
 		7A1E0C901A206B65005C8E8A /* NSArray+StringHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+StringHelper.h"; sourceTree = "<group>"; };
 		7A1E0C911A206B65005C8E8A /* NSArray+StringHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+StringHelper.m"; sourceTree = "<group>"; };
+		7A1E0C931A2143B6005C8E8A /* Item.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Item.h; sourceTree = "<group>"; };
+		7A1E0C941A2143B6005C8E8A /* Item.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Item.m; sourceTree = "<group>"; };
+		7A1E0C961A2143C2005C8E8A /* Store.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Store.h; sourceTree = "<group>"; };
+		7A1E0C971A2143C2005C8E8A /* Store.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Store.m; sourceTree = "<group>"; };
 		7A4B6C9E1A020B4000C66E90 /* UIColor+OrShopColors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+OrShopColors.h"; sourceTree = "<group>"; };
 		7A4B6C9F1A020B4000C66E90 /* UIColor+OrShopColors.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+OrShopColors.m"; sourceTree = "<group>"; };
 		7A7AAF8C18F89BF100A9C799 /* ShoppingItemViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShoppingItemViewController.h; sourceTree = "<group>"; };
@@ -197,6 +203,10 @@
 			children = (
 				7A7AAF8F18F89C3500A9C799 /* ShoppingItem.h */,
 				7A7AAF9018F89C3500A9C799 /* ShoppingItem.m */,
+				7A1E0C931A2143B6005C8E8A /* Item.h */,
+				7A1E0C941A2143B6005C8E8A /* Item.m */,
+				7A1E0C961A2143C2005C8E8A /* Store.h */,
+				7A1E0C971A2143C2005C8E8A /* Store.m */,
 				7AA70FD11904A1AB00E814EF /* ShoppingList.plist */,
 				7AA70FD31904A85F00E814EF /* DataSourceController.h */,
 				7AA70FD41904A85F00E814EF /* DataSourceController.m */,
@@ -321,7 +331,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7A1E0C951A2143B6005C8E8A /* Item.m in Sources */,
 				7AA4F8D418F8909100408C6F /* ShoppingItemCell.m in Sources */,
+				7A1E0C981A2143C2005C8E8A /* Store.m in Sources */,
 				7AE23EF018F898290064E7B0 /* ShoppingListTableViewController.m in Sources */,
 				7A4B6CA01A020B4000C66E90 /* UIColor+OrShopColors.m in Sources */,
 				7AE23EF318F899A60064E7B0 /* StoreTableViewController.m in Sources */,
