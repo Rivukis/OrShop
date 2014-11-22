@@ -67,7 +67,7 @@
     switch (self.tempAtPurchase) {
         case 0:     _colorFromTemp = [UIColor frozenColor];     break;
         case 1:     _colorFromTemp = [UIColor coldColor];       break;
-        case 2:     _colorFromTemp = [UIColor roomColor];       break;
+        case 2:     _colorFromTemp = [UIColor ambientColor];    break;
         case 3:     _colorFromTemp = [UIColor warmColor];       break;
         case 4:     _colorFromTemp = [UIColor hotColor];        break;
         default:    _colorFromTemp = [UIColor whiteColor];

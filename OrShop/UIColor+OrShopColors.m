@@ -18,7 +18,7 @@
     return [UIColor colorWithRed:0.54 green:0.76 blue:0.95 alpha:0.45]; // Jordy Blue
 }
 
-+ (UIColor *)roomColor {
++ (UIColor *)ambientColor {
     return [UIColor whiteColor];
 }
 
