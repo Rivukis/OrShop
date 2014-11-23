@@ -113,6 +113,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7A1E0C9C1A21CD8D005C8E8A /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				7AA70FD31904A85F00E814EF /* DataSourceController.h */,
+				7AA70FD41904A85F00E814EF /* DataSourceController.m */,
+			);
+			name = Controllers;
+			sourceTree = "<group>";
+		};
 		7A4B6CA11A020B5500C66E90 /* Support Classes */ = {
 			isa = PBXGroup;
 			children = (
@@ -161,6 +170,7 @@
 				7AA4F8B518F88D2200408C6F /* Images.xcassets */,
 				7AA4F8D618F890B200408C6F /* View Controllers */,
 				7AA4F8D518F890A600408C6F /* Model */,
+				7A1E0C9C1A21CD8D005C8E8A /* Controllers */,
 				7A4B6CA11A020B5500C66E90 /* Support Classes */,
 				7AA4F8A418F88D2200408C6F /* Supporting Files */,
 			);
@@ -208,8 +218,6 @@
 				7A1E0C961A2143C2005C8E8A /* Store.h */,
 				7A1E0C971A2143C2005C8E8A /* Store.m */,
 				7AA70FD11904A1AB00E814EF /* ShoppingList.plist */,
-				7AA70FD31904A85F00E814EF /* DataSourceController.h */,
-				7AA70FD41904A85F00E814EF /* DataSourceController.m */,
 			);
 			name = Model;
 			sourceTree = "<group>";

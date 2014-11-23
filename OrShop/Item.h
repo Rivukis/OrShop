@@ -20,13 +20,13 @@ NS_ENUM(NSUInteger, ItemTemp) {
 
 @property (nonatomic, strong) NSString *name;
 @property (nonatomic) NSUInteger amountNeeded;
-@property (nonatomic) enum ItemTemp tempAtPurchase;
+@property (nonatomic) enum ItemTemp temperatureType;
 @property (nonatomic, strong) UIColor *colorFromTemp;
 @property (nonatomic, strong) NSString *notes;
 @property (nonatomic) BOOL isChecked;
 @property (nonatomic) NSUInteger checkedOrder;
 
 - (instancetype)initGenericItem;
-+ (NSArray *)arrayWithOrderedTempAtPurchaseNumbers;
++ (NSArray *)arrayWithOrderedTemperatureTypes;
 
 @end

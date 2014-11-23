@@ -8,6 +8,16 @@
 
 #import <Foundation/Foundation.h>
 
+@class Item;
+
 @interface Store : NSObject
+
+@property (nonatomic, readonly) NSString *name;
+@property (nonatomic, readonly) NSArray *items; // of Item
+
+- (instancetype)initWithName:(NSString *)name items:(NSArray *)items;
+
+- (void)addShoppingItems:(NSArray *)items;
+- (void)removeShoppingItems:(NSArray *)items;
 
 @end

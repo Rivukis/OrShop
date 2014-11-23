@@ -7,23 +7,29 @@
 //
 
 #import "DataSourceController.h"
-#import "ShoppingItem.h"
+//#import "ShoppingItem.h"
+#import "Store.h"
+#import "Item.h"
 #import "NSArray+StringHelper.h"
+
+static BOOL const usePlist = YES;
+static NSString *const STORES_PLIST = @"stores.plist";
+static NSString *const STORE_NAMES_USED_PLIST = @"storeNamesUsed.plist";
+static NSString *const ITEM_NAMES_USED_PLIST = @"itemNamesUsed.plist";
+static NSString *const ITEMS_SORT_LIST_PLIST = @"itemsSortList.plist";
+
+//TODO: create singleton for data source controller
 
 @implementation DataSourceController
 
-const BOOL usePlist = YES;
-
 - (NSString *)storeNameForItemName:(NSString *)itemName {
-    NSString *storeName = @"";
-    NSMutableArray *items;
     BOOL shouldBreakOut = NO;
+    Store *foundStore;
     
-    for (NSString *store in [self.lists allKeys]) {
-        items = self.lists[store];
-        for (ShoppingItem *item in items) {
-            if ([item.name.lowercaseString isEqualToString:itemName.lowercaseString]) {
-                storeName = store;
+    for (Store *store in self.stores) {
+        for (Item *item in store.items) {
+            if ([item.name.lowercaseString isEqualToString:item.name.lowercaseString]) {
+                foundStore = store;
                 shouldBreakOut = YES;
                 break;
             }
@@ -31,9 +37,10 @@ const BOOL usePlist = YES;
         if (shouldBreakOut) break;
     }
     
-    return storeName;
+    return foundStore.name;
 }
 
+// TODO: refactor for new classes
 - (void)addToStoreNamesUsed:(NSString *)storeName {
     if (![self.storeNamesUsed containsString:storeName caseSensitive:NO] && ![storeName isEqualToString:[DataSourceController stringWithNoStoreName]]) {
         self.storeNamesUsed = [[self.storeNamesUsed
@@ -42,6 +49,7 @@ const BOOL usePlist = YES;
     }
 }
 
+// TODO: refactor for new classes
 - (void)addToItemNamesUsed:(NSString *)itemName {
     if (![self.itemNamesUsed containsString:itemName caseSensitive:NO] && ![itemName isEqualToString:@""]) {
         self.itemNamesUsed = [[self.itemNamesUsed
@@ -50,6 +58,7 @@ const BOOL usePlist = YES;
     }
 }
 
+// TODO: refactor for new classes
 - (void)removeFromStoreNamesUsed:(NSString *)storeName {
     if ([self.storeNamesUsed containsString:storeName caseSensitive:NO] && ![storeName isEqualToString:[DataSourceController stringWithNoStoreName]]) {
         NSMutableArray *tempArray = [self.storeNamesUsed mutableCopy];
@@ -58,6 +67,7 @@ const BOOL usePlist = YES;
     }
 }
 
+// TODO: refactor for new classes
 - (void)removeFromItemNamesUsed:(NSString *)itemName {
     if ([self.itemNamesUsed containsString:itemName caseSensitive:NO] && ![itemName isEqualToString:@""]) {
         NSMutableArray *tempArray = [self.itemNamesUsed mutableCopy];
@@ -66,37 +76,44 @@ const BOOL usePlist = YES;
     }
 }
 
-- (void)moveItemsFromStoreName:(NSString *)fromStoreName toStoreName:(NSString *)toStoreName {
-    NSMutableArray *fromStoreList = self.lists[fromStoreName];
-    NSMutableArray *toStoreList = self.lists[toStoreName];
-    if (!toStoreList) toStoreList = [NSMutableArray new];
-    
-    for (ShoppingItem *item in fromStoreList) {
-        item.preferredStore = toStoreName;
+
+// TODO: refactor to use Store class not NSString class for parameters ---MAYBE---
+- (void)moveItemsFromStoreWithName:(NSString *)fromStoreName toStoreWithName:(NSString *)toStoreName {
+    Store *fromStore = [self storeWithName:fromStoreName];
+    Store *toStore = [self storeWithName:toStoreName];
+    if (!toStore) {
+        toStore = [[Store alloc] initWithName:toStoreName items:fromStore.items];
+        [self.stores addObject:toStore];
+    } else {
+        [toStore addShoppingItems:fromStore.items];
     }
-    
-    toStoreList = [[toStoreList arrayByAddingObjectsFromArray:fromStoreList] mutableCopy];
-    [self.lists setObject:toStoreList forKey:toStoreName];
-    [self.lists removeObjectForKey:fromStoreName];
-    [self addToStoreNamesUsed:toStoreName];
+    [self.stores removeObject:fromStore];
+    [self addToStoreNamesUsed:toStore.name];
 }
 
-- (void)moveItem:(ShoppingItem *)item fromStore:(NSString *)fromStoreName toStore:(NSString *)toStoreName {
-    NSMutableArray *fromStoreList = self.lists[fromStoreName];
-    NSMutableArray *toStoreList;
-    item.isChecked = NO;
-    
-    toStoreList = self.lists[toStoreName];
-    if (!toStoreList) {
-        toStoreList = [NSMutableArray new];
-        self.lists[toStoreName] = toStoreList;
+- (void)moveItem:(Item *)item fromStoreWithName:(NSString *)fromStoreName toStoreWithName:(NSString *)toStoreName {
+    Store *fromStore = [self storeWithName:fromStoreName];
+    Store *toStore = [self storeWithName:toStoreName];
+    if (!toStore) {
+        toStore = [[Store alloc] initWithName:toStoreName items:@[item]];
+        [self.stores addObject:toStore];
+    } else {
+        [toStore addShoppingItems:@[item]];
     }
     
-    [toStoreList addObject:item];
-    [fromStoreList removeObject:item];
-    if (fromStoreList.count == 0) {
-        [self.lists removeObjectForKey:fromStoreName];
+    [fromStore removeShoppingItems:@[item]];
+    if (fromStore.items.count == 0) [self.stores removeObject:fromStore];
+    [self addToStoreNamesUsed:toStore.name];
+}
+
+- (Store *)storeWithName:(NSString *)storeName {
+    for (Store *store in self.stores) {
+        if ([store.name isEqualToString:storeName]) {
+            return store;
+        }
     }
+    
+    return nil;
 }
 
 + (NSString *)stringWithNoStoreName {
@@ -109,16 +126,16 @@ const BOOL usePlist = YES;
 
 
 - (void)save {
-    NSString *listsPlistPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:@"lists.plist"];
-    [NSKeyedArchiver archiveRootObject:self.lists toFile:listsPlistPath];
+    NSString *listsPlistPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:STORES_PLIST];
+    [NSKeyedArchiver archiveRootObject:self.stores toFile:listsPlistPath];
     
-    NSString *storeNamesUsedPlistPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:@"storeNamesUsed.plist"];
+    NSString *storeNamesUsedPlistPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:STORE_NAMES_USED_PLIST];
     [NSKeyedArchiver archiveRootObject:self.storeNamesUsed toFile:storeNamesUsedPlistPath];
     
-    NSString *itemNamesUsedPlistPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:@"itemNamesUsed.plist"];
+    NSString *itemNamesUsedPlistPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:ITEM_NAMES_USED_PLIST];
     [NSKeyedArchiver archiveRootObject:self.itemNamesUsed toFile:itemNamesUsedPlistPath];
     
-    NSString *itemsSortListPlistPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:@"itemsSortList.plist"];
+    NSString *itemsSortListPlistPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:ITEMS_SORT_LIST_PLIST];
     [NSKeyedArchiver archiveRootObject:self.itemsSortList toFile:itemsSortListPlistPath];
 }
 
@@ -170,46 +187,46 @@ const BOOL usePlist = YES;
 #pragma mark - Plist to Property Constructor Methods
 
 
-- (NSMutableDictionary *)listsFromBundleArray:(NSDictionary *)bundleDictionary {
-    NSMutableDictionary *lists = [NSMutableDictionary new];
+- (NSMutableArray *)storesFromBundleArray:(NSDictionary *)bundleDictionary {
+    NSMutableArray *stores = [NSMutableArray new];
     for (NSString *storeName in [bundleDictionary allKeys]) {
         NSMutableArray *items = [NSMutableArray new];
         
         for (NSDictionary *plistItem in bundleDictionary[storeName]) {
-            ShoppingItem *item = [ShoppingItem new];
+            Item *item = [[Item alloc] init];
             item.name = plistItem[@"Name"];
             item.amountNeeded = [plistItem[@"AmountNeeded"] intValue];
-            item.tempAtPurchase = [plistItem[@"TempAtPurchase"] intValue];
+            item.temperatureType = [plistItem[@"TempAtPurchase"] intValue];
             item.notes = plistItem[@"Notes"];
-            item.preferredStore = storeName;
             
             [items addObject:item];
         }
-        [lists setObject:items forKey:storeName];
+        Store *store = [[Store alloc] initWithName:storeName items:items];
+        [stores addObject:store];
     }
     
-    return lists;
+    return stores;
 }
 
 
 #pragma mark - Lazy Instantiation
 
 
-- (NSMutableDictionary *)lists {
-    if (!_lists) {
-        _lists = [self objectWithClass:[NSMutableDictionary class]
-                  fromSavedPlistString:@"lists.plist"
-                     orFromBundlePlist:@"SampleLists"
-              usingConstructorSelector:@selector(listsFromBundleArray:)];
+- (NSMutableArray *)stores {
+    if (!_stores) {
+        _stores = [self objectWithClass:[NSMutableArray class]
+                   fromSavedPlistString:STORES_PLIST
+                      orFromBundlePlist:@"SampleLists"
+               usingConstructorSelector:@selector(storesFromBundleArray:)];
     }
     
-    return _lists;
+    return _stores;
 }
 
 - (NSArray *)storeNamesUsed {
     if (!_storeNamesUsed) {
         _storeNamesUsed = [self objectWithClass:[NSArray class]
-                           fromSavedPlistString:@"storeNamesUsed.plist"
+                           fromSavedPlistString:STORE_NAMES_USED_PLIST
                               orFromBundlePlist:@"StoreNamesUsed"
                        usingConstructorSelector:nil];
     }
@@ -220,7 +237,7 @@ const BOOL usePlist = YES;
 - (NSArray *)itemNamesUsed {
     if (!_itemNamesUsed) {
         _itemNamesUsed = [self objectWithClass:[NSArray class]
-                          fromSavedPlistString:@"itemNamesUsed.plist"
+                          fromSavedPlistString:ITEM_NAMES_USED_PLIST
                              orFromBundlePlist:@"ItemNamesUsed"
                       usingConstructorSelector:nil];
     }
@@ -231,7 +248,7 @@ const BOOL usePlist = YES;
 - (NSMutableArray *)itemsSortList {
     if (!_itemsSortList) {
         _itemsSortList = [self objectWithClass:[NSMutableArray class]
-                          fromSavedPlistString:@"itemsSortList.plist"
+                          fromSavedPlistString:ITEMS_SORT_LIST_PLIST
                              orFromBundlePlist:@"ItemsSortList"
                       usingConstructorSelector:nil];
     }
