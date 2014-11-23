@@ -116,6 +116,7 @@ static NSString *const ITEMS_SORT_LIST_PLIST = @"itemsSortList.plist";
     return nil;
 }
 
+// TODO: set up version control for new NoStoreName string
 + (NSString *)stringWithNoStoreName {
 //    return @"(no preffered store)";
     return @"Miscellaneous Items";
@@ -125,9 +126,10 @@ static NSString *const ITEMS_SORT_LIST_PLIST = @"itemsSortList.plist";
 #pragma mark - Saving and Retrieving Methods
 
 
+// TODO: remove the lists.plist from the file directory using NSFileManager
 - (void)save {
-    NSString *listsPlistPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:STORES_PLIST];
-    [NSKeyedArchiver archiveRootObject:self.stores toFile:listsPlistPath];
+    NSString *storesPlistPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:STORES_PLIST];
+    [NSKeyedArchiver archiveRootObject:self.stores toFile:storesPlistPath];
     
     NSString *storeNamesUsedPlistPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:STORE_NAMES_USED_PLIST];
     [NSKeyedArchiver archiveRootObject:self.storeNamesUsed toFile:storeNamesUsedPlistPath];
