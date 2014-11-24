@@ -56,7 +56,7 @@
     self.items = [tempArray copy];
 }
 
-- (void)replaceShoppingItems:(NSArray *)items {
+- (void)replaceAllShoppingItems:(NSArray *)items {
     self.items = [items copy];
 }
 

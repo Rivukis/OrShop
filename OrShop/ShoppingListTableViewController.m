@@ -347,7 +347,7 @@
     if (tempArray.count == 0) {
         [self.dataSource removeStore:self.selectedStore];
     } else {
-        [self.selectedStore replaceShoppingItems:tempArray];
+        [self.selectedStore replaceAllShoppingItems:tempArray];
     }
     
     [inputArray removeAllObjects]; // Will Always Be self.haveItems
