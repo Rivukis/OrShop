@@ -144,19 +144,18 @@
 }
 
 - (void)MoveListAlertViewClickedButtonAtIndex:(NSInteger)buttonIndex {
-    // Never Mind Button Selected
-    if (buttonIndex == 0) {
-        [self unselectCurrentCell];
-    }
+    [self unselectCurrentCell];
+
     // Move All Items in oldStoreList to newStoreList && Save
-    else if (buttonIndex == 1) {
+    if (buttonIndex == 1) {
         NSString *oldStoreName = self.storeNames[self.currentCellIndex.row];
         NSString *newStoreName = [self.moveListAlert textFieldAtIndex:0].text;
-        if ([newStoreName isEqualToString:@""]) newStoreName = [DataSourceController stringWithNoStoreName];
+        if ([newStoreName isEqualToString:@""]) {
+            newStoreName = [DataSourceController stringWithNoStoreName];
+        }
         
         // Check If Store Names Are the Same
         if ([newStoreName isEqualToString:oldStoreName]) {
-            [self unselectCurrentCell];
             return;
         }
         
@@ -165,7 +164,6 @@
         [self.dataSource save];
         
         NSIndexPath *newIndexPath = [NSIndexPath indexPathForRow:[self.storeNames indexOfObject:newStoreName] inSection:0];
-        [self unselectCurrentCell];
         [self.tableView moveRowAtIndexPath:self.currentCellIndex toIndexPath:newIndexPath];
         UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:newIndexPath];
         cell.textLabel.text = newStoreName;
@@ -173,12 +171,10 @@
 }
 
 - (void)confirmDeletionAlertViewClickedButtonAtIndex:(NSInteger)buttonIndex {
-    // Keep Button Selected
-    if (buttonIndex == 0) {
-        [self unselectCurrentCell];
-    }
+    [self unselectCurrentCell];
+    
     // Delete Button Selected
-    else if (buttonIndex == 1) {
+    if (buttonIndex == 1) {
         NSString *storeName = self.storeNames[self.currentCellIndex.row];
         Store *store = [self.dataSource storeWithName:storeName];
         [self.dataSource removeStore:store];
@@ -200,7 +196,7 @@
 
 - (NSArray *)storeNames
 {
-    return [[self.dataSource.lists allKeys] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+    return [[self.dataSource arrayOfStoreNames] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
 }
 
 - (UIAlertView *)actionMenu
@@ -264,7 +260,7 @@
         [store addShoppingItems:@[item]];
         
         ShoppingItemViewController *destVC = segue.destinationViewController;
-        destVC.storeName = @"";
+        destVC.storeName = store.name;
         destVC.item = item;
         destVC.dataSource = self.dataSource;
         destVC.segueIdentifier = segue.identifier;

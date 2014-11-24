@@ -20,24 +20,33 @@ static NSString *const ITEMS_SORT_LIST_PLIST = @"itemsSortList.plist";
 //TODO: create singleton for data source controller
 //TODO: separate archiving part of class into needed ArchiveController
 
+@interface DataSourceController ()
+
+@property (strong, nonatomic) NSArray *stores; // of Store
+@property (strong, nonatomic) NSArray *storeNamesUsed; // of NSString
+@property (strong, nonatomic) NSArray *itemNamesUsed; // of NSString
+@property (strong, nonatomic) NSMutableArray *itemsSortList; // of NSString
+
+@property (strong, nonatomic) NSMutableArray *storeNames;
+
+@end
+
 @implementation DataSourceController
 
 - (NSString *)storeNameForItemName:(NSString *)itemName {
-    BOOL shouldBreakOut = NO;
-    Store *foundStore;
-    
     for (Store *store in self.stores) {
         for (Item *item in store.items) {
-            if ([item.name.lowercaseString isEqualToString:item.name.lowercaseString]) {
-                foundStore = store;
-                shouldBreakOut = YES;
-                break;
+            if ([itemName.lowercaseString isEqualToString:item.name.lowercaseString]) {
+                return store.name;
             }
         }
-        if (shouldBreakOut) break;
     }
     
-    return foundStore.name;
+    return nil;
+}
+
+- (NSArray *)arrayOfStoreNames {
+    return self.storeNames;
 }
 
 // TODO: refactor for new classes
@@ -118,12 +127,14 @@ static NSString *const ITEMS_SORT_LIST_PLIST = @"itemsSortList.plist";
 
 - (void)addStore:(Store *)store {
     self.stores = [self.stores arrayByAddingObject:store];
+    [self.storeNames addObject:store.name];
 }
 
 - (void)removeStore:(Store *)store {
     NSMutableArray *tempArray = [self.stores mutableCopy];
     [tempArray removeObject:store];
     self.stores = [tempArray copy];
+    [self.storeNames removeObject:store.name];
 }
 
 // TODO: set up version control for new NoStoreName string
@@ -230,6 +241,11 @@ static NSString *const ITEMS_SORT_LIST_PLIST = @"itemsSortList.plist";
                    fromSavedPlistString:STORES_PLIST
                       orFromBundlePlist:@"SampleLists"
                usingConstructorSelector:@selector(storesFromBundleArray:)];
+        
+        self.storeNames = [NSMutableArray new];
+        for (Store *store in _stores) {
+            [self.storeNames addObject:store.name];
+        }
     }
     
     return _stores;

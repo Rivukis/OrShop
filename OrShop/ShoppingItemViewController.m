@@ -9,6 +9,7 @@
 #import "ShoppingItemViewController.h"
 #import "AutoCompleteView.h"
 #import "DataSourceController.h"
+#import "Store.h"
 #import "Item.h"
 
 @interface ShoppingItemViewController () <UITextFieldDelegate, UIAlertViewDelegate, UIGestureRecognizerDelegate, AutoCompleteViewDelegate>
@@ -113,18 +114,17 @@
             self.preferredStoreTextField.text = [DataSourceController stringWithNoStoreName];
         }
         if (![self.storeName isEqualToString:self.preferredStoreTextField.text]) {
-            [self.dataSource moveItem:self.item fromStore:self.item.preferredStore toStore:self.preferredStoreTextField.text];
+            [self.dataSource moveItem:self.item fromStoreWithName:self.storeName toStoreWithName:self.preferredStoreTextField.text];
         }
         [self.dataSource removeFromItemNamesUsed:self.item.name];
         
-        self.item.preferredStore = self.preferredStoreTextField.text;
         self.item.name = self.itemNameTextField.text;
         self.item.amountNeeded = self.amountNeededStepper.value;
-        self.item.tempAtPurchase = self.tempAtPurchaseSegmentedControl.selectedSegmentIndex;
+        self.item.temperatureType = self.tempAtPurchaseSegmentedControl.selectedSegmentIndex;
         self.item.notes = self.notesTextField.text;
         
         // Add To Auto-Complete Lists
-        [self.dataSource addToStoreNamesUsed:self.item.preferredStore];
+        [self.dataSource addToStoreNamesUsed:self.preferredStoreTextField.text];
         [self.dataSource addToItemNamesUsed:self.item.name];
         
         [self.dataSource save];
@@ -141,7 +141,7 @@
     
     if (![self.item.name.lowercaseString isEqualToString:self.itemNameTextField.text.lowercaseString]) {
         NSString *itemStoreName = [self.dataSource storeNameForItemName:self.itemNameTextField.text];
-        if (![itemStoreName isEqualToString:@""]) {
+        if (itemStoreName) {
             NSString *title = @"Item Already Exists!";
             NSString *message = [NSString stringWithFormat:@"This item is already in %@ list.", itemStoreName];
             UIAlertView *itemExistsInThisListAlert = [[UIAlertView alloc] initWithTitle:title
@@ -157,43 +157,17 @@
     return YES;
 }
 
-// TODO: move moveToNewStore method to DataSourceController
-//- (void)moveToNewStore
-//{
-//    NSString *oldStoreName = self.item.preferredStore;
-//    NSString *newStoreName = self.preferredStoreTextField.text;
-//    if ([newStoreName isEqualToString:@""]) newStoreName = [DataSourceController stringWithNoStoreName];
-//    NSMutableArray *oldStoreList = self.dataSource.lists[oldStoreName];
-//    NSMutableArray *newStoreList;
-//    self.item.isChecked = NO;
-//    
-//    // Get New Store List
-//    if ([[self.dataSource.lists allKeys] indexOfObject:newStoreName] == NSNotFound) {
-//        newStoreList = [NSMutableArray new];
-//        [self.dataSource.lists setObject:newStoreList
-//                                  forKey:[NSString stringWithString:newStoreName]];
-//    } else {
-//        newStoreList = self.dataSource.lists[newStoreName];
-//    }
-//    
-//    // Add Item to New Store List
-//    [newStoreList addObject:self.item];
-//    
-//    // Remove Item From Old Store List
-//    [oldStoreList removeObject:self.item];
-//    if (!oldStoreList.count) [self.dataSource.lists removeObjectForKey:oldStoreName];
-//}
-
 - (void)cancelBarButtonPressed
 {
     [self resignKeyboard];
     
     if ([self.segueIdentifier isEqualToString:@"ToNewItem"]) {
-        NSUInteger lastItemIndex = [self.dataSource.lists[self.item.preferredStore] count] - 1;
-        [self.dataSource.lists[self.item.preferredStore] removeObjectAtIndex:lastItemIndex];
-        if ([self.dataSource.lists[self.item.preferredStore] count] == 0) {
-            [self.dataSource.lists removeObjectForKey:self.item.preferredStore];
+        Store *store = [self.dataSource storeWithName:self.storeName];
+        [store removeShoppingItems:@[self.item]];
+        if (store.items.count == 0) {
+            [self.dataSource removeStore:store];
         }
+        
         [self.dataSource save];
     }
     [self.navigationController popViewControllerAnimated:YES];
@@ -286,13 +260,14 @@
 {
     // Delete Alert
     if (alertView == self.deleteAlert && buttonIndex == 1) { // 1 == Delete Selected
-        NSString *storeName = self.item.preferredStore;
-        NSMutableArray *storeList = self.dataSource.lists[storeName];
+        Store *store = [self.dataSource storeWithName:self.storeName];
+        [store removeShoppingItems:@[self.item]];
         
-        [storeList removeObject:self.item];
-        if (!storeList.count) [self.dataSource.lists removeObjectForKey:storeName];
+        if (store.items.count == 0) {
+            [self.dataSource removeStore:store];
+        }
+        
         [self.dataSource save];
-        
         [self.navigationController popViewControllerAnimated:YES];
     }
 }

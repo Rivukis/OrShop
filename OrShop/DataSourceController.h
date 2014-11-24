@@ -14,12 +14,13 @@
 
 @interface DataSourceController : NSObject
 
-@property (strong, nonatomic) NSArray *stores; // of Store
-@property (strong, nonatomic) NSArray *storeNamesUsed; // of NSString
-@property (strong, nonatomic) NSArray *itemNamesUsed; // of NSString
-@property (strong, nonatomic) NSMutableArray *itemsSortList; // of NSString
+@property (nonatomic, readonly) NSArray *stores; // of Store
+@property (nonatomic, readonly) NSArray *storeNamesUsed; // of NSString
+@property (nonatomic, readonly) NSArray *itemNamesUsed; // of NSString
+@property (nonatomic, readonly) NSMutableArray *itemsSortList; // of NSString
 
 - (NSString *)storeNameForItemName:(NSString *)item;
+- (NSArray *)arrayOfStoreNames;
 
 - (void)addToStoreNamesUsed:(NSString *)storeName;
 - (void)addToItemNamesUsed:(NSString *)itemName;

@@ -471,7 +471,7 @@
             // Delete Item from dataSource
             [self.selectedStore removeShoppingItems:@[item]];
             
-            if (!self.selectedStore.items.count) {
+            if (self.selectedStore.items.count == 0) {
                 [self.dataSource removeStore:self.selectedStore];
             }
             [self.dataSource save];
@@ -481,7 +481,7 @@
             [self.tableView deleteRowsAtIndexPaths:@[self.currentCellIndex] withRowAnimation:UITableViewRowAnimationLeft];
             
             // Pop View If No Items In Store List
-            if (self.selectedStore.items.count) {
+            if (self.selectedStore.items.count == 0) {
                 [self.navigationController popViewControllerAnimated:YES];
             }
         }
@@ -553,7 +553,7 @@
         [self.selectedStore addShoppingItems:@[item]];
         
         ShoppingItemViewController *destVC = segue.destinationViewController;
-        destVC.storeName = @"";
+        destVC.storeName = self.selectedStore.name;
         destVC.item = item;
         destVC.dataSource = self.dataSource;
         destVC.segueIdentifier = segue.identifier;

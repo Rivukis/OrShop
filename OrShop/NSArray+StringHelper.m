@@ -31,11 +31,11 @@
         return [self indexOfObject:string];
     }
     
-    for (NSUInteger i = 0; i < self.count; i++) {
-        NSString *arrayString = self[i];
+    for (NSUInteger index = 0; index < self.count; index++) {
+        NSString *arrayString = self[index];
         if ([arrayString isKindOfClass:[NSString class]]) {
             if ([arrayString.lowercaseString isEqualToString:string.lowercaseString]) {
-                return i;
+                return index;
             }
         }
     }
@@ -53,11 +53,12 @@
         return;
     }
     
-    for (NSString *arrayString in self) {
-        if ([arrayString isKindOfClass:[NSString class]]) {
-            if ([arrayString.lowercaseString isEqualToString:string.lowercaseString]) {
-                [self removeObject:arrayString];
-            }
+    NSString *arrayString;
+    for (NSInteger index = 0; index < self.count; index++) {
+        arrayString = self[index];
+        if ([arrayString.lowercaseString isEqualToString:string.lowercaseString]) {
+            [self removeObject:arrayString];
+            index--;
         }
     }
 }

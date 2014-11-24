@@ -31,6 +31,21 @@
     return self;
 }
 
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    self = [super init];
+    if (self) {
+        self.name = [aDecoder decodeObjectForKey:@"name"];
+        self.items = [aDecoder decodeObjectForKey:@"items"];
+    }
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [aCoder encodeObject:self.name forKey:@"name"];
+    [aCoder encodeObject:self.items forKey:@"items"];
+}
+
 - (void)addShoppingItems:(NSArray *)items {
     self.items = [self.items arrayByAddingObjectsFromArray:items];
 }

@@ -73,10 +73,7 @@
 }
 
 - (NSString *)description {
-    
-    
-    
-    return (self.name) ? self.name : @"";
+    return (self.name) ? self.name : @"no item name";
 }
 
 @end
