@@ -19,5 +19,6 @@
 
 - (void)addShoppingItems:(NSArray *)items;
 - (void)removeShoppingItems:(NSArray *)items;
+- (void)replaceShoppingItems:(NSArray *)items;
 
 @end

@@ -10,6 +10,8 @@
 #import "ShoppingItemCell.h"
 #import "ShoppingItemViewController.h"
 #import "DataSourceController.h"
+#import "Store.h"
+#import "Item.h"
 #import "UIColor+OrShopColors.h"
 
 @interface ShoppingListTableViewController () <UITableViewDelegate>
@@ -40,7 +42,7 @@
     [super viewDidLoad];
     
     [self.view setTranslatesAutoresizingMaskIntoConstraints:NO];
-    self.title = self.storeName;
+    self.title = self.selectedStore.name;
     [self.navigationItem setRightBarButtonItems:self.rightBarButtons];
     self.refreshControl = self.pullRefreshControl;
     [self reloadNeedAndHaveArrays];
@@ -65,7 +67,7 @@
     self.needItems = nil;
     self.haveItems = nil;
     
-    for (ShoppingItem *item in self.dataSource.lists[self.storeName]) {
+    for (Item *item in self.selectedStore.items) {
         if (item.isChecked) {
             [self.haveItems addObject:item];
         } else {
@@ -78,8 +80,11 @@
     NSSortDescriptor *haveSorter = [[NSSortDescriptor alloc] initWithKey:@"checkedOrder" ascending:YES];
     [self.haveItems sortUsingDescriptors:@[haveSorter]];
     
-    if (((ShoppingItem *)[self.haveItems lastObject]).checkedOrder != self.haveItems.count) {
-        for (ShoppingItem *haveItem in self.haveItems) haveItem.checkedOrder = [self.haveItems indexOfObject:haveItem];
+    Item *lastHaveItem = self.haveItems.lastObject;
+    if (lastHaveItem.checkedOrder != self.haveItems.count) {
+        for (Item *haveItem in self.haveItems) {
+            haveItem.checkedOrder = [self.haveItems indexOfObject:haveItem];
+        }
     }
 }
 
@@ -114,14 +119,16 @@
     
     // - Add Known Items To Sorted Array
     for (NSString *itemName in self.dataSource.itemsSortList) {
-        for (ShoppingItem *item in arrayToSort) {
-            if ([itemName isEqualToString:item.name]) [sortedArray addObject:item];
+        for (Item *item in arrayToSort) {
+            if ([itemName isEqualToString:item.name]) {
+                [sortedArray addObject:item];
+            }
         }
     }
     
     // - Add Unknown Items To Sorted Array
     NSMutableArray *unKnownItems = [NSMutableArray new];
-    for (ShoppingItem *item in arrayToSort) {
+    for (Item *item in arrayToSort) {
         if (![sortedArray containsObject:item]) [unKnownItems addObject:item];
     }
     sortedArray = [[unKnownItems arrayByAddingObjectsFromArray:sortedArray] mutableCopy];
@@ -129,17 +136,19 @@
     // Re-sort Based on Item Temp At Purchase
     arrayToSort = [sortedArray mutableCopy];
     sortedArray = [NSMutableArray new];
-    NSArray *tempAtPurchaseOrder = [ShoppingItem arrayWithOrderedTempAtPurchaseNumbers];
+    NSArray *tempAtPurchaseOrder = [Item arrayWithOrderedTemperatureTypes];
     
     // - Add Known Temps To Sorted Array
     for (int i = 0; i < tempAtPurchaseOrder.count; i++) {
-        for (ShoppingItem *item in arrayToSort) {
-            if (item.tempAtPurchase == [tempAtPurchaseOrder[i] integerValue]) [sortedArray addObject:item];
+        for (Item *item in arrayToSort) {
+            if (item.temperatureType == [tempAtPurchaseOrder[i] integerValue]) {
+                [sortedArray addObject:item];
+            }
         }
     }
     
     // - Add Unknown Temps To Sorted Array
-    for (ShoppingItem *item in arrayToSort) {
+    for (Item *item in arrayToSort) {
         if (![sortedArray containsObject:item]) [sortedArray addObject:item];
     }
     
@@ -170,14 +179,14 @@
     
     // Make and Load inputArrayIndexesOfItemsAlsoInSortList
     inputArrayIndexesOfItemsAlsoInSortList = [NSMutableArray new];
-    for (ShoppingItem *item in inputArray) {
+    for (Item *item in inputArray) {
         if ([sortList containsObject:item.name]) {
             [inputArrayIndexesOfItemsAlsoInSortList addObject:@([inputArray indexOfObject:item])];
         }
     }
     
     // Move Items In sortList Based On Order in inputArray
-    for (ShoppingItem *item in inputArray) {
+    for (Item *item in inputArray) {
         currentInputArrayItemIndex = [inputArray indexOfObject:item];
         belowInputArrayItemIndex = -1;
         aboveInputArrayItemIndex = inputArray.count;
@@ -250,17 +259,17 @@
         moveOptionTracker = 0;
         
         if (belowInputArrayItemIndex > -1) {
-            belowDataSourceItemIndex = [sortList indexOfObject:((ShoppingItem *)inputArray[belowInputArrayItemIndex]).name];
+            belowDataSourceItemIndex = [sortList indexOfObject:((Item *)inputArray[belowInputArrayItemIndex]).name];
             moveOptionTracker += 1;
         }
         
         if (aboveInputArrayItemIndex < inputArray.count) {
-            aboveDataSourceItemIndex = [sortList indexOfObject:((ShoppingItem *)inputArray[aboveInputArrayItemIndex]).name];
+            aboveDataSourceItemIndex = [sortList indexOfObject:((Item *)inputArray[aboveInputArrayItemIndex]).name];
             moveOptionTracker += 2;
         }
         
         if ([inputArrayIndexesOfItemsAlsoInSortList containsObject:@(currentInputArrayItemIndex)]) {
-            currentDataSourceItemIndex = [sortList indexOfObject:((ShoppingItem *)inputArray[currentInputArrayItemIndex]).name];
+            currentDataSourceItemIndex = [sortList indexOfObject:((Item *)inputArray[currentInputArrayItemIndex]).name];
             moveOptionTracker += 4;
         }
         
@@ -329,16 +338,19 @@
     
     // Delete Checked Items From List
     NSMutableArray *tempArray = [NSMutableArray new];
-    for (ShoppingItem *item in self.dataSource.lists[self.storeName]) if (!item.isChecked) [tempArray addObject:item];
-    if (tempArray.count == 0) [self.dataSource.lists removeObjectForKey:self.storeName];
-    else [self.dataSource.lists setObject:tempArray forKey:self.storeName];
-    
-    [inputArray removeAllObjects]; // Will Always Be self.haveItems
-    
-    if ([self.dataSource.lists[self.storeName] count] == 0) {
-        [self.dataSource.lists removeObjectForKey:self.storeName];
+    for (Item *item in self.selectedStore.items) {
+        if (!item.isChecked) {
+            [tempArray addObject:item];
+        }
     }
     
+    if (tempArray.count == 0) {
+        [self.dataSource removeStore:self.selectedStore];
+    } else {
+        [self.selectedStore replaceShoppingItems:tempArray];
+    }
+    
+    [inputArray removeAllObjects]; // Will Always Be self.haveItems
     [self.dataSource save];
 }
 
@@ -370,7 +382,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    ShoppingItem *item = (indexPath.section == 0) ? self.needItems[indexPath.row] : self.haveItems[indexPath.row];
+    Item *item = (indexPath.section == 0) ? self.needItems[indexPath.row] : self.haveItems[indexPath.row];
     ShoppingItemCell *cell;
     if ([item.notes isEqualToString:@""]) {
         cell = [tableView dequeueReusableCellWithIdentifier:@"ItemCell" forIndexPath:indexPath];
@@ -394,20 +406,31 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    ShoppingItem *selectedItem = (indexPath.section == 0) ? self.needItems[indexPath.row] : self.haveItems[indexPath.row];
+    Item *selectedItem = (indexPath.section == 0) ? self.needItems[indexPath.row] : self.haveItems[indexPath.row];
     selectedItem.isChecked = !selectedItem.isChecked;
     
     if (selectedItem.isChecked) {
         // Assign selectedItem.checkedOrder to equal # of Checked Items + 1 (starts at 0)
         selectedItem.checkedOrder = 0;
-        for (ShoppingItem *item in self.dataSource.lists[self.storeName]) if (item.isChecked) selectedItem.checkedOrder++;
+        for (Item *item in self.selectedStore.items) {
+            if (item.isChecked) {
+                selectedItem.checkedOrder++;
+            }
+        }
     } else {
         // Re-Assign .checkedOrder After Removal
         NSMutableArray *tempArray = [NSMutableArray new];
-        for (ShoppingItem *item in self.dataSource.lists[self.storeName]) if (item.isChecked) [tempArray addObject:item];
+        for (Item *item in self.selectedStore.items) {
+            if (item.isChecked) {
+                [tempArray addObject:item];
+            }
+        }
+        
         NSSortDescriptor *haveSorter = [[NSSortDescriptor alloc] initWithKey:@"checkedOrder" ascending:YES];
         [tempArray sortUsingDescriptors:@[haveSorter]];
-        for (ShoppingItem *checkedItem in tempArray) checkedItem.checkedOrder = [tempArray indexOfObject:checkedItem];
+        for (Item *checkedItem in tempArray) {
+            checkedItem.checkedOrder = [tempArray indexOfObject:checkedItem];
+        }
     }
     
     [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
@@ -442,13 +465,15 @@
             UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:self.currentCellIndex];
             cell.backgroundColor = [UIColor whiteColor];
         } else if (buttonIndex == 1) { // Delete Button
-            NSMutableArray *storeList = self.dataSource.lists[self.storeName];
             NSMutableArray *currentSubList = (self.currentCellIndex.section == 0) ? self.needItems : self.haveItems;
-            ShoppingItem *item = currentSubList[self.currentCellIndex.row];
+            Item *item = currentSubList[self.currentCellIndex.row];
             
             // Delete Item from dataSource
-            [storeList removeObject:item];
-            if (!storeList.count) [self.dataSource.lists removeObjectForKey:self.storeName];
+            [self.selectedStore removeShoppingItems:@[item]];
+            
+            if (!self.selectedStore.items.count) {
+                [self.dataSource removeStore:self.selectedStore];
+            }
             [self.dataSource save];
             
             // Delete Item from tableView
@@ -456,7 +481,9 @@
             [self.tableView deleteRowsAtIndexPaths:@[self.currentCellIndex] withRowAnimation:UITableViewRowAnimationLeft];
             
             // Pop View If No Items In Store List
-            if (self.needItems.count == 0 && self.haveItems.count == 0) [self.navigationController popViewControllerAnimated:YES];
+            if (self.selectedStore.items.count) {
+                [self.navigationController popViewControllerAnimated:YES];
+            }
         }
     }
 }
@@ -521,8 +548,8 @@
         destVC.dataSource = self.dataSource;
         destVC.segueIdentifier = segue.identifier;
     } else if ([segue.identifier isEqualToString:@"ToNewItem"]) {
-        ShoppingItem *item = [[ShoppingItem alloc] initGenericItemWithStoreName:self.storeName];
-        [self.dataSource.lists[self.storeName] addObject:item];
+        Item *item = [[Item alloc] initGenericItem];
+        [self.selectedStore addShoppingItems:@[item]];
         
         ShoppingItemViewController *destVC = segue.destinationViewController;
         destVC.item = item;

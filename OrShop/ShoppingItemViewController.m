@@ -8,6 +8,8 @@
 
 #import "ShoppingItemViewController.h"
 #import "AutoCompleteView.h"
+#import "DataSourceController.h"
+#import "ShoppingItem.h"
 
 @interface ShoppingItemViewController () <UITextFieldDelegate, UIAlertViewDelegate, UIGestureRecognizerDelegate, AutoCompleteViewDelegate>
 

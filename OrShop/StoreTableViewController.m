@@ -10,6 +10,8 @@
 #import "ShoppingListTableViewController.h"
 #import "ShoppingItemViewController.h"
 #import "DataSourceController.h"
+#import "Store.h"
+#import "Item.h"
 #import "UIColor+OrShopColors.h"
 
 @interface StoreTableViewController () <UITableViewDelegate, UITableViewDataSource, UIAlertViewDelegate>
@@ -63,7 +65,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return self.dataSource.lists.count;
+    return self.dataSource.stores.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -159,7 +161,7 @@
         }
         
         // Move Items, Save Data, && Reload Table
-        [self.dataSource moveItemsFromStoreName:oldStoreName toStoreName:newStoreName];
+        [self.dataSource moveItemsFromStoreWithName:oldStoreName toStoreWithName:newStoreName];
         [self.dataSource save];
         
         NSIndexPath *newIndexPath = [NSIndexPath indexPathForRow:[self.storeNames indexOfObject:newStoreName] inSection:0];
@@ -178,7 +180,9 @@
     // Delete Button Selected
     else if (buttonIndex == 1) {
         NSString *storeName = self.storeNames[self.currentCellIndex.row];
-        [self.dataSource.lists removeObjectForKey:storeName];
+        Store *store = [self.dataSource storeWithName:storeName];
+        [self.dataSource removeStore:store];
+        
         [self.dataSource save];
         [self.tableView deleteRowsAtIndexPaths:@[self.currentCellIndex] withRowAnimation:UITableViewRowAnimationLeft];
     }
@@ -237,25 +241,27 @@
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
     if ([segue.identifier isEqualToString:@"ToShoppingList"]) {
-        ShoppingListTableViewController *destVC = segue.destinationViewController;
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
         UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
         NSString *storeName = cell.textLabel.text;
         
-        destVC.storeName = storeName;
+        ShoppingListTableViewController *destVC = segue.destinationViewController;
+        destVC.selectedStore = [self.dataSource storeWithName:storeName];
         destVC.dataSource = self.dataSource;
         
     } else if ([segue.identifier isEqualToString:@"ToNewItem"]) {
         
+        //TODO: shouldn't create store and item here / instead do it when user hits save
+        
         // Check for "no store" List And Create If Not Found
         NSString *storeName = [DataSourceController stringWithNoStoreName];
-        NSMutableArray *storeList = self.dataSource.lists[storeName];
-        if (storeList == NULL) {
-            storeList = [NSMutableArray new];
-            [self.dataSource.lists setObject:storeList forKey:storeName];
+        Store *store = [self.dataSource storeWithName:storeName];
+        if (!store) {
+            store = [[Store alloc] initWithName:storeName items:nil];
+            [self.dataSource addStore:store];
         }
-        ShoppingItem *item = [[ShoppingItem alloc] initGenericItemWithStoreName:storeName];
-        [storeList addObject:item];
+        Item *item = [[Item alloc] initGenericItem];
+        [store addShoppingItems:@[item]];
         
         ShoppingItemViewController *destVC = segue.destinationViewController;
         destVC.item = item;

@@ -7,11 +7,16 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "DataSourceController.h"
+
+@class DataSourceController;
+@class Store;
 
 @interface ShoppingListTableViewController : UITableViewController
 
 @property (weak, nonatomic) DataSourceController *dataSource;
-@property (strong, nonatomic) NSString *storeName;
+@property (strong, nonatomic) Store *selectedStore;
+
+//TODO: remove storeName property
+//@property (strong, nonatomic) NSString *storeName;
 
 @end

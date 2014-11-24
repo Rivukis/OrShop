@@ -7,7 +7,6 @@
 //
 
 #import "DataSourceController.h"
-//#import "ShoppingItem.h"
 #import "Store.h"
 #import "Item.h"
 #import "NSArray+StringHelper.h"
@@ -19,6 +18,7 @@ static NSString *const ITEM_NAMES_USED_PLIST = @"itemNamesUsed.plist";
 static NSString *const ITEMS_SORT_LIST_PLIST = @"itemsSortList.plist";
 
 //TODO: create singleton for data source controller
+//TODO: separate archiving part of class into needed ArchiveController
 
 @implementation DataSourceController
 
@@ -77,35 +77,6 @@ static NSString *const ITEMS_SORT_LIST_PLIST = @"itemsSortList.plist";
 }
 
 
-// TODO: refactor to use Store class not NSString class for parameters ---MAYBE---
-- (void)moveItemsFromStoreWithName:(NSString *)fromStoreName toStoreWithName:(NSString *)toStoreName {
-    Store *fromStore = [self storeWithName:fromStoreName];
-    Store *toStore = [self storeWithName:toStoreName];
-    if (!toStore) {
-        toStore = [[Store alloc] initWithName:toStoreName items:fromStore.items];
-        [self.stores addObject:toStore];
-    } else {
-        [toStore addShoppingItems:fromStore.items];
-    }
-    [self.stores removeObject:fromStore];
-    [self addToStoreNamesUsed:toStore.name];
-}
-
-- (void)moveItem:(Item *)item fromStoreWithName:(NSString *)fromStoreName toStoreWithName:(NSString *)toStoreName {
-    Store *fromStore = [self storeWithName:fromStoreName];
-    Store *toStore = [self storeWithName:toStoreName];
-    if (!toStore) {
-        toStore = [[Store alloc] initWithName:toStoreName items:@[item]];
-        [self.stores addObject:toStore];
-    } else {
-        [toStore addShoppingItems:@[item]];
-    }
-    
-    [fromStore removeShoppingItems:@[item]];
-    if (fromStore.items.count == 0) [self.stores removeObject:fromStore];
-    [self addToStoreNamesUsed:toStore.name];
-}
-
 - (Store *)storeWithName:(NSString *)storeName {
     for (Store *store in self.stores) {
         if ([store.name isEqualToString:storeName]) {
@@ -114,6 +85,45 @@ static NSString *const ITEMS_SORT_LIST_PLIST = @"itemsSortList.plist";
     }
     
     return nil;
+}
+
+// TODO: refactor to use Store class not NSString class for parameters ---MAYBE---
+- (void)moveItemsFromStoreWithName:(NSString *)fromStoreName toStoreWithName:(NSString *)toStoreName {
+    Store *fromStore = [self storeWithName:fromStoreName];
+    Store *toStore = [self storeWithName:toStoreName];
+    if (!toStore) {
+        toStore = [[Store alloc] initWithName:toStoreName items:fromStore.items];
+        [self addStore:toStore];
+    } else {
+        [toStore addShoppingItems:fromStore.items];
+    }
+    [self removeStore:fromStore];
+    [self addToStoreNamesUsed:toStore.name];
+}
+
+- (void)moveItem:(Item *)item fromStoreWithName:(NSString *)fromStoreName toStoreWithName:(NSString *)toStoreName {
+    Store *fromStore = [self storeWithName:fromStoreName];
+    Store *toStore = [self storeWithName:toStoreName];
+    if (!toStore) {
+        toStore = [[Store alloc] initWithName:toStoreName items:@[item]];
+        [self addStore:toStore];
+    } else {
+        [toStore addShoppingItems:@[item]];
+    }
+    
+    [fromStore removeShoppingItems:@[item]];
+    if (fromStore.items.count == 0) [self removeStore:fromStore];
+    [self addToStoreNamesUsed:toStore.name];
+}
+
+- (void)addStore:(Store *)store {
+    self.stores = [self.stores arrayByAddingObject:store];
+}
+
+- (void)removeStore:(Store *)store {
+    NSMutableArray *tempArray = [self.stores mutableCopy];
+    [tempArray removeObject:store];
+    self.stores = [tempArray copy];
 }
 
 // TODO: set up version control for new NoStoreName string
@@ -126,7 +136,7 @@ static NSString *const ITEMS_SORT_LIST_PLIST = @"itemsSortList.plist";
 #pragma mark - Saving and Retrieving Methods
 
 
-// TODO: remove the lists.plist from the file directory using NSFileManager
+// TODO: remove the lists.plist from the file directory using NSFileManager in needed class VersionController
 - (void)save {
     NSString *storesPlistPath = [[DataSourceController applicationDocumentsDirectory] stringByAppendingPathComponent:STORES_PLIST];
     [NSKeyedArchiver archiveRootObject:self.stores toFile:storesPlistPath];
@@ -189,7 +199,7 @@ static NSString *const ITEMS_SORT_LIST_PLIST = @"itemsSortList.plist";
 #pragma mark - Plist to Property Constructor Methods
 
 
-- (NSMutableArray *)storesFromBundleArray:(NSDictionary *)bundleDictionary {
+- (NSArray *)storesFromBundleArray:(NSDictionary *)bundleDictionary {
     NSMutableArray *stores = [NSMutableArray new];
     for (NSString *storeName in [bundleDictionary allKeys]) {
         NSMutableArray *items = [NSMutableArray new];
@@ -207,16 +217,16 @@ static NSString *const ITEMS_SORT_LIST_PLIST = @"itemsSortList.plist";
         [stores addObject:store];
     }
     
-    return stores;
+    return [stores copy];
 }
 
 
 #pragma mark - Lazy Instantiation
 
 
-- (NSMutableArray *)stores {
+- (NSArray *)stores {
     if (!_stores) {
-        _stores = [self objectWithClass:[NSMutableArray class]
+        _stores = [self objectWithClass:[NSArray class]
                    fromSavedPlistString:STORES_PLIST
                       orFromBundlePlist:@"SampleLists"
                usingConstructorSelector:@selector(storesFromBundleArray:)];

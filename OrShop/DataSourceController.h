@@ -9,14 +9,12 @@
 #import <Foundation/Foundation.h>
 
 //@class ShoppingItem;
+@class Store;
 @class Item;
 
 @interface DataSourceController : NSObject
 
-//@property (strong, nonatomic) NSMutableDictionary *lists; // of NSString : NSMutableArray
-
-@property (strong, nonatomic) NSMutableArray *stores; // of Store
-
+@property (strong, nonatomic) NSArray *stores; // of Store
 @property (strong, nonatomic) NSArray *storeNamesUsed; // of NSString
 @property (strong, nonatomic) NSArray *itemNamesUsed; // of NSString
 @property (strong, nonatomic) NSMutableArray *itemsSortList; // of NSString
@@ -28,12 +26,11 @@
 - (void)removeFromStoreNamesUsed:(NSString *)storeName;
 - (void)removeFromItemNamesUsed:(NSString *)itemName;
 
-//- (void)moveItemsFromStoreName:(NSString *)fromStoreName toStoreName:(NSString *)toStoreName;
-//- (void)moveItem:(ShoppingItem *)item fromStore:(NSString *)fromStoreName toStore:(NSString *)toStoreName;
-
+- (Store *)storeWithName:(NSString *)storeName;
 - (void)moveItemsFromStoreWithName:(NSString *)fromStoreName toStoreWithName:(NSString *)toStoreName;
-//- (void)moveItem:(Item *)item fromStore:(Store *)fromStore toStore:(Store *)toStore;
 - (void)moveItem:(Item *)item fromStoreWithName:(NSString *)fromStoreName toStoreWithName:(NSString *)toStoreName;
+- (void)addStore:(Store *)store;
+- (void)removeStore:(Store *)store;
 
 - (void)save;
 

@@ -7,12 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "DataSourceController.h"
-#import "ShoppingItem.h"
+
+@class DataSourceController;
+@class Item;
 
 @interface ShoppingItemViewController : UIViewController
 
-@property (strong, nonatomic) ShoppingItem *item;
+@property (strong, nonatomic) Item *item;
 @property (weak, nonatomic) DataSourceController *dataSource;
 @property (weak, nonatomic) NSString *segueIdentifier;
 

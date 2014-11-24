@@ -25,20 +25,24 @@
 - (instancetype)initWithName:(NSString *)name items:(NSArray *)items {
     self = [super init];
     if (self) {
-        self.name = name;
-        self.items = items;
+        self.name = (name) ? name : [NSString string];
+        self.items = (items) ? items : [NSArray array];
     }
     return self;
 }
 
 - (void)addShoppingItems:(NSArray *)items {
-    self.items = [[self.items arrayByAddingObjectsFromArray:items] mutableCopy];
+    self.items = [self.items arrayByAddingObjectsFromArray:items];
 }
 
 - (void)removeShoppingItems:(NSArray *)items {
     NSMutableArray *tempArray = [self.items mutableCopy];
     [tempArray removeObjectsInArray:items];
     self.items = [tempArray copy];
+}
+
+- (void)replaceShoppingItems:(NSArray *)items {
+    self.items = [items copy];
 }
 
 @end
