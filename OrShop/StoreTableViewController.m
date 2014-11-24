@@ -264,6 +264,7 @@
         [store addShoppingItems:@[item]];
         
         ShoppingItemViewController *destVC = segue.destinationViewController;
+        destVC.storeName = @"";
         destVC.item = item;
         destVC.dataSource = self.dataSource;
         destVC.segueIdentifier = segue.identifier;

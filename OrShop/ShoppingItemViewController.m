@@ -9,7 +9,7 @@
 #import "ShoppingItemViewController.h"
 #import "AutoCompleteView.h"
 #import "DataSourceController.h"
-#import "ShoppingItem.h"
+#import "Item.h"
 
 @interface ShoppingItemViewController () <UITextFieldDelegate, UIAlertViewDelegate, UIGestureRecognizerDelegate, AutoCompleteViewDelegate>
 
@@ -88,10 +88,15 @@
     
     // Load Item Properties
     self.itemNameTextField.text = self.item.name;
-    self.preferredStoreTextField.text = ([self.item.preferredStore isEqualToString:[DataSourceController stringWithNoStoreName]]) ? @"" : self.item.preferredStore;
+    if ([self.storeName isEqualToString:[DataSourceController stringWithNoStoreName]]) {
+        self.preferredStoreTextField.text = @"";
+    } else {
+        self.preferredStoreTextField.text = self.storeName;
+    }
+    
     self.amountNeededTextField.text = [NSString stringWithFormat:@"%lu", (unsigned long)self.item.amountNeeded];
     self.amountNeededStepper.value = self.item.amountNeeded;
-    self.tempAtPurchaseSegmentedControl.selectedSegmentIndex = self.item.tempAtPurchase;
+    self.tempAtPurchaseSegmentedControl.selectedSegmentIndex = self.item.temperatureType;
     self.notesTextField.text = self.item.notes;
 }
 
@@ -107,7 +112,7 @@
         if ([self.preferredStoreTextField.text isEqualToString:@""]) {
             self.preferredStoreTextField.text = [DataSourceController stringWithNoStoreName];
         }
-        if (![self.item.preferredStore isEqualToString:self.preferredStoreTextField.text]) {
+        if (![self.storeName isEqualToString:self.preferredStoreTextField.text]) {
             [self.dataSource moveItem:self.item fromStore:self.item.preferredStore toStore:self.preferredStoreTextField.text];
         }
         [self.dataSource removeFromItemNamesUsed:self.item.name];

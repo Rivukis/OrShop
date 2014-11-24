@@ -544,6 +544,7 @@
         ShoppingItemViewController *destVC = segue.destinationViewController;
         NSIndexPath *indexPath = self.currentCellIndex;
         
+        destVC.storeName = self.selectedStore.name;
         destVC.item = (indexPath.section == 0) ? self.needItems[indexPath.row] : self.haveItems[indexPath.row];
         destVC.dataSource = self.dataSource;
         destVC.segueIdentifier = segue.identifier;
@@ -552,6 +553,7 @@
         [self.selectedStore addShoppingItems:@[item]];
         
         ShoppingItemViewController *destVC = segue.destinationViewController;
+        destVC.storeName = @"";
         destVC.item = item;
         destVC.dataSource = self.dataSource;
         destVC.segueIdentifier = segue.identifier;
