@@ -150,7 +150,7 @@
 
 - (void)saveChangesToDataSourceSortListUsingMutableArray:(NSMutableArray *)inputArray
 {
-    NSMutableArray *sortList = [self.dataSource.itemsSortList mutableCopy];
+    NSMutableArray *sortList = self.dataSource.itemsSortList;
     sortList = (sortList) ? sortList : [NSMutableArray new];
     inputArray = (inputArray) ? inputArray : [NSMutableArray new];
     
@@ -343,7 +343,7 @@
         [self.dataSource.lists removeObjectForKey:self.storeName];
     }
     
-    [self.dataSource setItemsSortList:sortList];
+    [inputArray removeAllObjects]; // Will Always Be self.haveItems
     [self.dataSource save];
 }
 

@@ -20,8 +20,6 @@
 - (NSString *)storeNameForItemName:(NSString *)item;
 
 - (void)addToStoreNamesUsed:(NSString *)storeName;
-- (void)addToItemNamesUsed:(NSString *)itemName;
-- (void)removeFromStoreNamesUsed:(NSString *)storeName;
 - (void)removeFromItemNamesUsed:(NSString *)itemName;
 - (void)moveItemsFromStoreName:(NSString *)fromStoreName toStoreName:(NSString *)toStoreName;
 - (void)moveItem:(ShoppingItem *)item fromStore:(NSString *)fromStoreName toStore:(NSString *)toStoreName;

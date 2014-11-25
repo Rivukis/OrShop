@@ -26,7 +26,6 @@ const BOOL usePlist = YES;
                 storeName = store;
                 shouldBreakOut = YES;
                 break;
-            }
         }
         if (shouldBreakOut) break;
     }
@@ -230,10 +229,11 @@ const BOOL usePlist = YES;
 
 - (NSMutableArray *)itemsSortList {
     if (!_itemsSortList) {
-        _itemsSortList = [self objectWithClass:[NSMutableArray class]
-                          fromSavedPlistString:@"itemsSortList.plist"
-                             orFromBundlePlist:@"ItemsSortList"
-                      usingConstructorSelector:nil];
+        _itemsSortList = [[self objectWithClass:[NSMutableArray class]
+                           fromSavedPlistString:ITEMS_SORT_LIST_PLIST
+                              orFromBundlePlist:@"ItemsSortList"
+                       usingConstructorSelector:nil]
+                          mutableCopy];
     }
     
     return _itemsSortList;
