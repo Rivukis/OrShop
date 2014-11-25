@@ -275,10 +275,11 @@ static NSString *const ITEMS_SORT_LIST_PLIST = @"itemsSortList.plist";
 
 - (NSMutableArray *)itemsSortList {
     if (!_itemsSortList) {
-        _itemsSortList = [self objectWithClass:[NSMutableArray class]
-                          fromSavedPlistString:ITEMS_SORT_LIST_PLIST
-                             orFromBundlePlist:@"ItemsSortList"
-                      usingConstructorSelector:nil];
+        _itemsSortList = [[self objectWithClass:[NSMutableArray class]
+                           fromSavedPlistString:ITEMS_SORT_LIST_PLIST
+                              orFromBundlePlist:@"ItemsSortList"
+                       usingConstructorSelector:nil]
+                          mutableCopy];
     }
     
     return _itemsSortList;
