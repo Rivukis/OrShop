@@ -150,7 +150,7 @@
 
 - (void)saveChangesToDataSourceSortListUsingMutableArray:(NSMutableArray *)inputArray
 {
-    NSMutableArray *sortList = self.dataSource.itemsSortList;
+    NSMutableArray *sortList = [self.dataSource.itemsSortList mutableCopy];
     sortList = (sortList) ? sortList : [NSMutableArray new];
     inputArray = (inputArray) ? inputArray : [NSMutableArray new];
     
@@ -205,6 +205,7 @@
                 // Only one item in inputArrayIndexesOfItemsAlsoInSortList and Is Below Current Item Index
                 if (inputArrayIndexesOfItemsAlsoInSortList.count == 1 &&
                     currentInputArrayItemIndex > [inputArrayIndexesOfItemsAlsoInSortList.firstObject integerValue]) {
+                    belowInputArrayItemIndex = [inputArrayIndexesOfItemsAlsoInSortList.firstObject integerValue];
                     isSearching = NO;
                 }
                 
@@ -266,9 +267,11 @@
         
         // Sort Each Item In sortList
         NSString *tempName;
+        BOOL shouldBreakOut = NO;
         switch (moveOptionTracker) {
             case 0: // No Items
-                [sortList addObject:item.name];
+                sortList = [[inputArray arrayByAddingObjectsFromArray:sortList] mutableCopy];
+                shouldBreakOut = YES;
                 break;
             case 1: // Below Item
                 placeToAddIndex = belowDataSourceItemIndex + 1;
@@ -325,6 +328,7 @@
                     lastItemSortListIndex = currentDataSourceItemIndex;
                 }
         }
+        if (shouldBreakOut) break;
     }
     
     // Delete Checked Items From List
@@ -339,6 +343,7 @@
         [self.dataSource.lists removeObjectForKey:self.storeName];
     }
     
+    [self.dataSource setItemsSortList:sortList];
     [self.dataSource save];
 }
 
