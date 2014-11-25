@@ -26,6 +26,7 @@
 - (void)addToItemNamesUsed:(NSString *)itemName;
 - (void)removeFromStoreNamesUsed:(NSString *)storeName;
 - (void)removeFromItemNamesUsed:(NSString *)itemName;
+- (void)setItemsSortList:(NSMutableArray *)itemsSortList;
 
 - (Store *)storeWithName:(NSString *)storeName;
 - (void)moveItemsFromStoreWithName:(NSString *)fromStoreName toStoreWithName:(NSString *)toStoreName;
