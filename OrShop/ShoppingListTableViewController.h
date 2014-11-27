@@ -16,7 +16,4 @@
 @property (weak, nonatomic) DataSourceController *dataSource;
 @property (strong, nonatomic) Store *selectedStore;
 
-//TODO: remove storeName property
-//@property (strong, nonatomic) NSString *storeName;
-
 @end

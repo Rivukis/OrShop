@@ -25,7 +25,6 @@ static NSString *const ITEMS_SORT_LIST_PLIST = @"itemsSortList.plist";
 @property (strong, nonatomic) NSArray *stores; // of Store
 @property (strong, nonatomic) NSArray *storeNamesUsed; // of NSString
 @property (strong, nonatomic) NSArray *itemNamesUsed; // of NSString
-@property (strong, nonatomic) NSMutableArray *itemsSortList; // of NSString
 
 @property (strong, nonatomic) NSMutableArray *storeNames;
 

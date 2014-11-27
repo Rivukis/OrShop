@@ -17,14 +17,13 @@
 @property (nonatomic, readonly) NSArray *stores; // of Store
 @property (nonatomic, readonly) NSArray *storeNamesUsed; // of NSString
 @property (nonatomic, readonly) NSArray *itemNamesUsed; // of NSString
-@property (nonatomic, readonly) NSMutableArray *itemsSortList; // of NSString
+@property (nonatomic, strong) NSMutableArray *itemsSortList; // of NSString
 
 - (NSString *)storeNameForItemName:(NSString *)item;
 - (NSArray *)arrayOfStoreNames;
 
 - (void)addToStoreNamesUsed:(NSString *)storeName;
 - (void)removeFromItemNamesUsed:(NSString *)itemName;
-- (void)setItemsSortList:(NSMutableArray *)itemsSortList;
 
 - (Store *)storeWithName:(NSString *)storeName;
 - (void)moveItemsFromStoreWithName:(NSString *)fromStoreName toStoreWithName:(NSString *)toStoreName;
