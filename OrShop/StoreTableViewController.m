@@ -231,21 +231,13 @@
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
-    
     if ([segue.identifier isEqualToString:@"ToShoppingList"]) {
-        if ([sender isKindOfClass:[UITableViewCell class]]) {
-            UITableViewCell *selectedCell = sender;
-            NSString *storeName = selectedCell.textLabel.text;
-            ShoppingListTableViewController *destVC = segue.destinationViewController;
-            destVC.selectedStore = [self.dataSource storeWithName:storeName];
-        } else {
-            NSString *class = NSStringFromClass([self class]);
-            NSString *senderClass = NSStringFromClass([sender class]);
-            NSString *cellClass = NSStringFromClass([UITableViewCell class]);
-            NSString *currentSEL = NSStringFromSelector(_cmd);
-            [NSException raise:NSInternalInconsistencyException
-                        format:@"[%@ %@] was called with parameter %@ *sender; sender should be of class %@", class, currentSEL, senderClass, cellClass];
-        }
+        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+        UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+        NSString *storeName = cell.textLabel.text;
+        
+        ShoppingListTableViewController *destVC = segue.destinationViewController;
+        destVC.selectedStore = [self.dataSource storeWithName:storeName];
         
     } else if ([segue.identifier isEqualToString:@"ToNewItem"]) {
         
