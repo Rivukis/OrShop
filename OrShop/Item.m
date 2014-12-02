@@ -11,21 +11,14 @@
 
 @implementation Item
 
-//- (instancetype)init {
-//    [self doesNotRecognizeSelector:_cmd];
-//    return nil;
-//}
-
-- (instancetype)initGenericItem {
-    self = [super init];
-    if (self) {
-        self.name = @"";
-        self.amountNeeded = 1;
-        self.temperatureType = ItemTempAmbient;
-        self.notes = @"";
-    }
++ (Item *)genericItem {
+    Item *item = [[Item alloc] init];
+    item.name = @"";
+    item.amountNeeded = 1;
+    item.temperatureType = ItemTempAmbient;
+    item.notes = @"";
     
-    return self;
+    return item;
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {

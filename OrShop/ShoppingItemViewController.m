@@ -84,7 +84,7 @@
         [self.deleteButton removeFromSuperview];
         rightBarButtonTitle = @"Create";
         self.title = @"Create Item";
-        self.item = [[Item alloc] initGenericItem];
+        self.item = [Item genericItem];
         
     } else if ([self.segueIdentifier isEqualToString:@"ToItem"]) {
         rightBarButtonTitle = @"Save";

@@ -26,7 +26,7 @@ NS_ENUM(NSUInteger, ItemTemp) {
 @property (nonatomic) BOOL isChecked;
 @property (nonatomic) NSUInteger checkedOrder;
 
-- (instancetype)initGenericItem;
++ (Item *)genericItem;
 + (NSArray *)arrayWithOrderedTemperatureTypes;
 
 @end
