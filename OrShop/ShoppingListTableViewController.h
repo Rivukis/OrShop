@@ -8,12 +8,10 @@
 
 #import <UIKit/UIKit.h>
 
-@class DataSourceController;
 @class Store;
 
 @interface ShoppingListTableViewController : UITableViewController
 
-@property (weak, nonatomic) DataSourceController *dataSource;
 @property (strong, nonatomic) Store *selectedStore;
 
 @end

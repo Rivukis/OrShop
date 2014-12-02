@@ -47,6 +47,7 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
+    self.dataSource = [DataSourceController sharedInstance];
     [self.tableView reloadData];
 }
 
@@ -188,12 +189,6 @@
 #pragma mark - Lazy Instantiation
 
 
-- (DataSourceController *)dataSource
-{
-    if (!_dataSource) _dataSource = [DataSourceController new];
-    return _dataSource;
-}
-
 - (NSArray *)storeNames
 {
     return [[self.dataSource arrayOfStoreNames] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
@@ -236,14 +231,21 @@
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
+    
     if ([segue.identifier isEqualToString:@"ToShoppingList"]) {
-        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-        UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-        NSString *storeName = cell.textLabel.text;
-        
-        ShoppingListTableViewController *destVC = segue.destinationViewController;
-        destVC.selectedStore = [self.dataSource storeWithName:storeName];
-        destVC.dataSource = self.dataSource;
+        if ([sender isKindOfClass:[UITableViewCell class]]) {
+            UITableViewCell *selectedCell = sender;
+            NSString *storeName = selectedCell.textLabel.text;
+            ShoppingListTableViewController *destVC = segue.destinationViewController;
+            destVC.selectedStore = [self.dataSource storeWithName:storeName];
+        } else {
+            NSString *class = NSStringFromClass([self class]);
+            NSString *senderClass = NSStringFromClass([sender class]);
+            NSString *cellClass = NSStringFromClass([UITableViewCell class]);
+            NSString *currentSEL = NSStringFromSelector(_cmd);
+            [NSException raise:NSInternalInconsistencyException
+                        format:@"[%@ %@] was called with parameter %@ *sender; sender should be of class %@", class, currentSEL, senderClass, cellClass];
+        }
         
     } else if ([segue.identifier isEqualToString:@"ToNewItem"]) {
         
@@ -262,7 +264,6 @@
         ShoppingItemViewController *destVC = segue.destinationViewController;
         destVC.storeName = store.name;
         destVC.item = item;
-        destVC.dataSource = self.dataSource;
         destVC.segueIdentifier = segue.identifier;
     }
 }

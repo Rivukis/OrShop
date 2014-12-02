@@ -14,15 +14,18 @@
 
 @interface DataSourceController : NSObject
 
++ (DataSourceController *)sharedInstance;
+
 @property (nonatomic, readonly) NSArray *stores; // of Store
 @property (nonatomic, readonly) NSArray *storeNamesUsed; // of NSString
 @property (nonatomic, readonly) NSArray *itemNamesUsed; // of NSString
 @property (nonatomic, strong) NSMutableArray *itemsSortList; // of NSString
 
-- (NSString *)storeNameForItemName:(NSString *)item;
+- (NSArray *)storeAndItemNameForItemString:(NSString *)itemString; // [0] = StoreName, [1] = ItemName
 - (NSArray *)arrayOfStoreNames;
 
 - (void)addToStoreNamesUsed:(NSString *)storeName;
+- (void)addToItemNamesUsed:(NSString *)storeName;
 - (void)removeFromItemNamesUsed:(NSString *)itemName;
 
 - (Store *)storeWithName:(NSString *)storeName;

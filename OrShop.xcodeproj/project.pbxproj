@@ -31,6 +31,7 @@
 		7AA4F8D418F8909100408C6F /* ShoppingItemCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 7AA4F8D318F8909100408C6F /* ShoppingItemCell.m */; };
 		7AA70FD21904A1AB00E814EF /* ShoppingList.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7AA70FD11904A1AB00E814EF /* ShoppingList.plist */; };
 		7AA70FD51904A85F00E814EF /* DataSourceController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7AA70FD41904A85F00E814EF /* DataSourceController.m */; };
+		7AB979ED1A26FA7E00414D68 /* VersionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7AB979EC1A26FA7E00414D68 /* VersionController.m */; };
 		7AE23EF018F898290064E7B0 /* ShoppingListTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7AE23EEF18F898290064E7B0 /* ShoppingListTableViewController.m */; };
 		7AE23EF318F899A60064E7B0 /* StoreTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7AE23EF218F899A60064E7B0 /* StoreTableViewController.m */; };
 /* End PBXBuildFile section */
@@ -83,6 +84,8 @@
 		7AA70FD11904A1AB00E814EF /* ShoppingList.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = ShoppingList.plist; sourceTree = "<group>"; };
 		7AA70FD31904A85F00E814EF /* DataSourceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DataSourceController.h; sourceTree = "<group>"; };
 		7AA70FD41904A85F00E814EF /* DataSourceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DataSourceController.m; sourceTree = "<group>"; };
+		7AB979EB1A26FA7E00414D68 /* VersionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VersionController.h; sourceTree = "<group>"; };
+		7AB979EC1A26FA7E00414D68 /* VersionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VersionController.m; sourceTree = "<group>"; };
 		7AE23EEE18F898290064E7B0 /* ShoppingListTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShoppingListTableViewController.h; sourceTree = "<group>"; };
 		7AE23EEF18F898290064E7B0 /* ShoppingListTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShoppingListTableViewController.m; sourceTree = "<group>"; };
 		7AE23EF118F899A60064E7B0 /* StoreTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StoreTableViewController.h; sourceTree = "<group>"; };
@@ -118,6 +121,8 @@
 			children = (
 				7AA70FD31904A85F00E814EF /* DataSourceController.h */,
 				7AA70FD41904A85F00E814EF /* DataSourceController.m */,
+				7AB979EB1A26FA7E00414D68 /* VersionController.h */,
+				7AB979EC1A26FA7E00414D68 /* VersionController.m */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -166,6 +171,8 @@
 		7AA4F8A318F88D2200408C6F /* OrShop */ = {
 			isa = PBXGroup;
 			children = (
+				7AA4F8AC18F88D2200408C6F /* AppDelegate.h */,
+				7AA4F8AD18F88D2200408C6F /* AppDelegate.m */,
 				7AA4F8AF18F88D2200408C6F /* Main.storyboard */,
 				7AA4F8B518F88D2200408C6F /* Images.xcassets */,
 				7AA4F8D618F890B200408C6F /* View Controllers */,
@@ -180,8 +187,6 @@
 		7AA4F8A418F88D2200408C6F /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				7AA4F8AC18F88D2200408C6F /* AppDelegate.h */,
-				7AA4F8AD18F88D2200408C6F /* AppDelegate.m */,
 				7AA4F8A518F88D2200408C6F /* OrShop-Info.plist */,
 				7AA4F8A618F88D2200408C6F /* InfoPlist.strings */,
 				7AA4F8A918F88D2200408C6F /* main.m */,
@@ -351,6 +356,7 @@
 				7A1D4F13191019E800FF54BF /* AutoCompleteView.m in Sources */,
 				7AA4F8AE18F88D2200408C6F /* AppDelegate.m in Sources */,
 				7A1E0C921A206B65005C8E8A /* NSArray+StringHelper.m in Sources */,
+				7AB979ED1A26FA7E00414D68 /* VersionController.m in Sources */,
 				7AA4F8AA18F88D2200408C6F /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

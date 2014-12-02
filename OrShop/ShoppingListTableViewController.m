@@ -21,6 +21,7 @@
 @property (strong, nonatomic) UIAlertView *confirmDeleteAlert;
 @property (strong, nonatomic) NSIndexPath *currentCellIndex;
 
+@property (strong, nonatomic) DataSourceController *dataSource;
 @property (strong, nonatomic) NSMutableArray *needItems;
 @property (strong, nonatomic) NSMutableArray *haveItems;
 
@@ -42,6 +43,7 @@
     [super viewDidLoad];
     
     [self.view setTranslatesAutoresizingMaskIntoConstraints:NO];
+    self.dataSource = [DataSourceController sharedInstance];
     self.title = self.selectedStore.name;
     [self.navigationItem setRightBarButtonItems:self.rightBarButtons];
     self.refreshControl = self.pullRefreshControl;
@@ -550,8 +552,8 @@
         
         destVC.storeName = self.selectedStore.name;
         destVC.item = (indexPath.section == 0) ? self.needItems[indexPath.row] : self.haveItems[indexPath.row];
-        destVC.dataSource = self.dataSource;
         destVC.segueIdentifier = segue.identifier;
+
     } else if ([segue.identifier isEqualToString:@"ToNewItem"]) {
         Item *item = [[Item alloc] initGenericItem];
         [self.selectedStore addShoppingItems:@[item]];
@@ -559,7 +561,6 @@
         ShoppingItemViewController *destVC = segue.destinationViewController;
         destVC.storeName = self.selectedStore.name;
         destVC.item = item;
-        destVC.dataSource = self.dataSource;
         destVC.segueIdentifier = segue.identifier;
     }
 }

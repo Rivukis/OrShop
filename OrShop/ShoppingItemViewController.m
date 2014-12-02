@@ -28,6 +28,7 @@
 @property (strong, nonatomic) UIAlertView *deleteAlert;
 @property (strong, nonatomic) AutoCompleteView *autoCompleteView;
 @property (strong, nonatomic) UITextField *textFieldBeingEdited;
+@property (strong, nonatomic) DataSourceController *dataSource;
 
 @end
 
@@ -37,7 +38,7 @@
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
-        // Custom initialization
+        
     }
     return self;
 }
@@ -47,6 +48,7 @@
     [super viewDidLoad];
     [self setDelegates];
     
+    self.dataSource = [DataSourceController sharedInstance];
     self.automaticallyAdjustsScrollViewInsets = NO;
     self.scrollView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     [self loadViewBasedOnSegueIdentifier];
@@ -140,10 +142,10 @@
     }
     
     if (![self.item.name.lowercaseString isEqualToString:self.itemNameTextField.text.lowercaseString]) {
-        NSString *itemStoreName = [self.dataSource storeNameForItemName:self.itemNameTextField.text];
-        if (itemStoreName) {
+        NSArray *storeAndItemNames = [self.dataSource storeAndItemNameForItemString:self.itemNameTextField.text];
+        if (storeAndItemNames) {
             NSString *title = @"Item Already Exists!";
-            NSString *message = [NSString stringWithFormat:@"This item is already in %@ list.", itemStoreName];
+            NSString *message = [NSString stringWithFormat:@"%@ is already in %@ list.", storeAndItemNames[1], storeAndItemNames[0]];
             UIAlertView *itemExistsInThisListAlert = [[UIAlertView alloc] initWithTitle:title
                                                                                 message:message
                                                                                delegate:nil

@@ -7,6 +7,7 @@
 //
 
 #import "DataSourceController.h"
+#import <libkern/OSAtomic.h>
 #import "Store.h"
 #import "Item.h"
 #import "NSArray+StringHelper.h"
@@ -32,11 +33,41 @@ static NSString *const ITEMS_SORT_LIST_PLIST = @"itemsSortList.plist";
 
 @implementation DataSourceController
 
-- (NSString *)storeNameForItemName:(NSString *)itemName {
+static BOOL initilizingFromSharedInstance = NO;
+
+- (instancetype)init {
+    if (!initilizingFromSharedInstance) {
+        NSString *class = NSStringFromClass([self class]);
+        NSString *currentSEL = NSStringFromSelector(_cmd);
+        NSString *properSEL = NSStringFromSelector(@selector(sharedInstance));
+        [NSException raise:NSInternalInconsistencyException
+                    format:@"[%@ %@] cannot be called; use +[%@ %@] instead", class, currentSEL, class, properSEL];
+    }
+    
+    return [super init];
+}
+
++ (DataSourceController *)sharedInstance {
+    static DataSourceController *sharedInstance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        initilizingFromSharedInstance = YES;
+        sharedInstance = [[DataSourceController alloc] init];
+        initilizingFromSharedInstance = NO;
+    });
+    
+    return sharedInstance;
+}
+
+
+#pragma mark - Store Manipulation
+
+
+- (NSArray *)storeAndItemNameForItemString:(NSString *)itemString {
     for (Store *store in self.stores) {
         for (Item *item in store.items) {
-            if ([itemName.lowercaseString isEqualToString:item.name.lowercaseString]) {
-                return store.name;
+            if ([itemString.lowercaseString isEqualToString:item.name.lowercaseString]) {
+                return @[store.name, item.name];
             }
         }
     }
