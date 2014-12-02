@@ -29,8 +29,7 @@
 
 @implementation ShoppingListTableViewController
 
-- (id)initWithStyle:(UITableViewStyle)style
-{
+- (id)initWithStyle:(UITableViewStyle)style {
     self = [super initWithStyle:style];
     if (self) {
         
@@ -38,8 +37,7 @@
     return self;
 }
 
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
     
     [self.view setTranslatesAutoresizingMaskIntoConstraints:NO];
@@ -50,22 +48,19 @@
     [self reloadNeedAndHaveArrays];
 }
 
-- (void)viewDidAppear:(BOOL)animated
-{
+- (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     
     [self refreshTableView];
     if (self.needItems.count == 0 && self.haveItems.count == 0) [self.navigationController popViewControllerAnimated:YES];
 }
 
-- (void)didReceiveMemoryWarning
-{
+- (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
 
-- (void)reloadNeedAndHaveArrays
-{
+- (void)reloadNeedAndHaveArrays {
     self.needItems = nil;
     self.haveItems = nil;
     
@@ -90,23 +85,20 @@
     }
 }
 
-- (void)refreshTableView
-{
+- (void)refreshTableView {
     [self reloadNeedAndHaveArrays];
     [self.tableView reloadData];
     if (self.refreshControl.refreshing) [self.refreshControl endRefreshing];
 }
 
-- (void)doneShopping
-{
+- (void)doneShopping {
     [self refreshTableView];
     [self saveChangesToDataSourceSortListUsingMutableArray:self.haveItems];
     [self.tableView reloadData];
     [self.navigationController popViewControllerAnimated:YES];
 }
 
-- (void)addNewItem
-{
+- (void)addNewItem {
     [self performSegueWithIdentifier:@"ToNewItem" sender:nil];
 }
 
@@ -114,8 +106,7 @@
 #pragma mark - Sorting Methods
 
 
-- (NSMutableArray *)sortUsingDataSourceOnMutableArray:(NSMutableArray *)arrayToSort
-{
+- (NSMutableArray *)sortUsingDataSourceOnMutableArray:(NSMutableArray *)arrayToSort {
     // Sort Based on Data Source List
     NSMutableArray *sortedArray = [NSMutableArray new];
     
@@ -159,8 +150,7 @@
     return sortedArray;
 }
 
-- (void)saveChangesToDataSourceSortListUsingMutableArray:(NSMutableArray *)inputArray
-{
+- (void)saveChangesToDataSourceSortListUsingMutableArray:(NSMutableArray *)inputArray {
     NSMutableArray *sortList = self.dataSource.itemsSortList;
     sortList = (sortList) ? sortList : [NSMutableArray new];
     inputArray = (inputArray) ? inputArray : [NSMutableArray new];
@@ -364,18 +354,15 @@
 #pragma mark - UITableView Delegate && DataSource
 
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
-{
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 2;
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return (section == 0) ? self.needItems.count : self.haveItems.count;
 }
 
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
-{
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     NSString *sectionTitle = @"";
     if (section == 0) {
         sectionTitle = @"NEED";
@@ -386,8 +373,7 @@
     return sectionTitle;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     Item *item = (indexPath.section == 0) ? self.needItems[indexPath.row] : self.haveItems[indexPath.row];
     ShoppingItemCell *cell;
     if ([item.notes isEqualToString:@""]) {
@@ -410,8 +396,7 @@
     return 44.0f;
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     Item *selectedItem = (indexPath.section == 0) ? self.needItems[indexPath.row] : self.haveItems[indexPath.row];
     selectedItem.isChecked = !selectedItem.isChecked;
     
@@ -440,17 +425,14 @@
     }
     
     [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-//    [tableView reloadData];
 }
 
-- (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath
-{
+- (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
     self.currentCellIndex = indexPath;
     [self performSegueWithIdentifier:@"ToItem" sender:nil];
 }
 
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
-{
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
         self.currentCellIndex = indexPath;
         [self.confirmDeleteAlert show];
@@ -464,8 +446,7 @@
 #pragma mark - UIAlertView Delegate Methods
 
 
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
     if (alertView == self.confirmDeleteAlert) {
         if (buttonIndex == 0) { // Never Mind Button
             UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:self.currentCellIndex];
@@ -498,20 +479,17 @@
 #pragma mark - Lazy Instantiation
 
 
-- (NSMutableArray *)needItems
-{
+- (NSMutableArray *)needItems {
     if (!_needItems) _needItems = [NSMutableArray new];
     return _needItems;
 }
 
-- (NSMutableArray *)haveItems
-{
+- (NSMutableArray *)haveItems {
     if (!_haveItems) _haveItems = [NSMutableArray new];
     return _haveItems;
 }
 
-- (NSArray *)rightBarButtons
-{
+- (NSArray *)rightBarButtons {
     if (!_rightBarButtons) {
         UIBarButtonItem *addBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addNewItem)];
         UIBarButtonItem *doneBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneShopping)];
@@ -520,8 +498,7 @@
     return _rightBarButtons;
 }
 
-- (UIRefreshControl *)pullRefreshControl
-{
+- (UIRefreshControl *)pullRefreshControl {
     if (!_pullRefreshControl) {
         _pullRefreshControl = [UIRefreshControl new];
         _pullRefreshControl.tintColor = [UIColor colorWithRed:0.54 green:0.76 blue:0.95 alpha:0.45];
@@ -530,8 +507,7 @@
     return _pullRefreshControl;
 }
 
-- (UIAlertView *)confirmDeleteAlert
-{
+- (UIAlertView *)confirmDeleteAlert {
     if (!_confirmDeleteAlert) _confirmDeleteAlert = [[UIAlertView alloc] initWithTitle:@"Delete?"
                                                                  message:@"Are you sure you want to delete item?"
                                                                 delegate:self
@@ -544,24 +520,14 @@
 #pragma mark - Navigation
 
 
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
-{
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    ShoppingItemViewController *destVC = segue.destinationViewController;
+    destVC.storeName = self.selectedStore.name;
+    destVC.segueIdentifier = segue.identifier;
+    
     if ([segue.identifier isEqualToString:@"ToItem"]) {
-        ShoppingItemViewController *destVC = segue.destinationViewController;
         NSIndexPath *indexPath = self.currentCellIndex;
-        
-        destVC.storeName = self.selectedStore.name;
         destVC.item = (indexPath.section == 0) ? self.needItems[indexPath.row] : self.haveItems[indexPath.row];
-        destVC.segueIdentifier = segue.identifier;
-
-    } else if ([segue.identifier isEqualToString:@"ToNewItem"]) {
-        Item *item = [[Item alloc] initGenericItem];
-        [self.selectedStore addShoppingItems:@[item]];
-        
-        ShoppingItemViewController *destVC = segue.destinationViewController;
-        destVC.storeName = self.selectedStore.name;
-        destVC.item = item;
-        destVC.segueIdentifier = segue.identifier;
     }
 }
 

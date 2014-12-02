@@ -43,6 +43,15 @@
     return self;
 }
 
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        
+    }
+    return self;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -70,33 +79,37 @@
 
 - (void)loadViewBasedOnSegueIdentifier
 {
+    NSString *rightBarButtonTitle;
     if ([self.segueIdentifier isEqualToString:@"ToNewItem"]) {
-        // New Item Setup
         [self.deleteButton removeFromSuperview];
-        UIBarButtonItem *createBarButton = [[UIBarButtonItem alloc] initWithTitle:@"Create" style:UIBarButtonItemStylePlain target:self action:@selector(createOrSaveBarButtonPressed)];
-        [self.navigationItem setRightBarButtonItem:createBarButton];
+        rightBarButtonTitle = @"Create";
         self.title = @"Create Item";
-    } else {
-        // Existing Item Setup
-        UIBarButtonItem *saveBarButton = [[UIBarButtonItem alloc] initWithTitle:@"Save" style:UIBarButtonItemStylePlain target:self action:@selector(createOrSaveBarButtonPressed)];
-        [self.navigationItem setRightBarButtonItem:saveBarButton];
+        self.item = [[Item alloc] initGenericItem];
+        
+    } else if ([self.segueIdentifier isEqualToString:@"ToItem"]) {
+        rightBarButtonTitle = @"Save";
         self.title = @"Edit Item";
     }
     
-    // Generic Item Setup
-    [self setItemNamePlaceholderWithAttributedString:[ShoppingItemViewController redItemNamePlaceholderAttributedString]];
+    UIBarButtonItem *rightBarButton = [[UIBarButtonItem alloc] initWithTitle:rightBarButtonTitle
+                                                                       style:UIBarButtonItemStylePlain
+                                                                      target:self
+                                                                      action:@selector(createOrSaveBarButtonPressed)];
+    [self.navigationItem setRightBarButtonItem:rightBarButton];
+    
     UIBarButtonItem *cancelBarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelBarButtonPressed)];
     cancelBarButton.tintColor = [UIColor redColor];
     [self.navigationItem setLeftBarButtonItem:cancelBarButton];
     
-    // Load Item Properties
-    self.itemNameTextField.text = self.item.name;
+    [self setItemNamePlaceholderWithAttributedString:[ShoppingItemViewController redItemNamePlaceholderAttributedString]];
+    
     if ([self.storeName isEqualToString:[DataSourceController stringWithNoStoreName]]) {
         self.preferredStoreTextField.text = @"";
     } else {
         self.preferredStoreTextField.text = self.storeName;
     }
     
+    self.itemNameTextField.text = self.item.name;
     self.amountNeededTextField.text = [NSString stringWithFormat:@"%lu", (unsigned long)self.item.amountNeeded];
     self.amountNeededStepper.value = self.item.amountNeeded;
     self.tempAtPurchaseSegmentedControl.selectedSegmentIndex = self.item.temperatureType;
@@ -104,7 +117,7 @@
 }
 
 
-#pragma mark - User Actions
+#pragma mark - Create, Save, or Cancel
 
 
 - (void)createOrSaveBarButtonPressed
@@ -112,26 +125,48 @@
     [self resignKeyboard];
     
     if ([self canItemBeSaved]) {
-        if ([self.preferredStoreTextField.text isEqualToString:@""]) {
-            self.preferredStoreTextField.text = [DataSourceController stringWithNoStoreName];
+        
+        NSString *updatedStoreName = self.preferredStoreTextField.text;
+        if ([updatedStoreName isEqualToString:@""]) {
+            updatedStoreName = [DataSourceController stringWithNoStoreName];
         }
+        
+        if ([self.segueIdentifier isEqualToString:@"ToItem"]) {
+            if (![self.storeName isEqualToString:updatedStoreName]) {
+                [self.dataSource moveItem:self.item fromStoreWithName:self.storeName toStoreWithName:updatedStoreName];
+            }
+            
+        } else if ([self.segueIdentifier isEqualToString:@"ToNewItem"]) {
+            Store *store = [self.dataSource storeWithName:updatedStoreName];
+            if (!store) {
+                store = [[Store alloc] initWithName:self.preferredStoreTextField.text items:@[self.item]];
+                [self.dataSource addStore:store];
+            }
+        }
+        
         if (![self.storeName isEqualToString:self.preferredStoreTextField.text]) {
-            [self.dataSource moveItem:self.item fromStoreWithName:self.storeName toStoreWithName:self.preferredStoreTextField.text];
+            [self.dataSource addToStoreNamesUsed:self.preferredStoreTextField.text];
         }
-        [self.dataSource removeFromItemNamesUsed:self.item.name];
+        
+        if (![self.item.name isEqualToString:self.itemNameTextField.text]) {
+            [self.dataSource removeFromItemNamesUsed:self.item.name];
+            [self.dataSource addToItemNamesUsed:self.itemNameTextField.text];
+        }
         
         self.item.name = self.itemNameTextField.text;
         self.item.amountNeeded = self.amountNeededStepper.value;
         self.item.temperatureType = self.tempAtPurchaseSegmentedControl.selectedSegmentIndex;
         self.item.notes = self.notesTextField.text;
         
-        // Add To Auto-Complete Lists
-        [self.dataSource addToStoreNamesUsed:self.preferredStoreTextField.text];
-        [self.dataSource addToItemNamesUsed:self.item.name];
-        
         [self.dataSource save];
         [self.navigationController popViewControllerAnimated:YES];
     }
+}
+
+- (void)cancelBarButtonPressed
+{
+    [self resignKeyboard];
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (BOOL)canItemBeSaved
@@ -159,21 +194,9 @@
     return YES;
 }
 
-- (void)cancelBarButtonPressed
-{
-    [self resignKeyboard];
-    
-    if ([self.segueIdentifier isEqualToString:@"ToNewItem"]) {
-        Store *store = [self.dataSource storeWithName:self.storeName];
-        [store removeShoppingItems:@[self.item]];
-        if (store.items.count == 0) {
-            [self.dataSource removeStore:store];
-        }
-        
-        [self.dataSource save];
-    }
-    [self.navigationController popViewControllerAnimated:YES];
-}
+
+#pragma mark - User Input
+
 
 - (IBAction)itemNameTextFieldEditingChanged:(UITextField *)sender
 {
@@ -354,6 +377,11 @@
                                                        cancelButtonTitle:@"Never Mind"
                                                        otherButtonTitles:@"Delete!", nil];
     return _deleteAlert;
+}
+
+- (NSString *)storeName {
+    if (!_storeName) _storeName = @"";
+    return _storeName;
 }
 
 @end

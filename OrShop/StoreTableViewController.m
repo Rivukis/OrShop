@@ -240,22 +240,7 @@
         destVC.selectedStore = [self.dataSource storeWithName:storeName];
         
     } else if ([segue.identifier isEqualToString:@"ToNewItem"]) {
-        
-        //TODO: shouldn't create store and item here / instead do it when user hits save
-        
-        // Check for "no store" List And Create If Not Found
-        NSString *storeName = [DataSourceController stringWithNoStoreName];
-        Store *store = [self.dataSource storeWithName:storeName];
-        if (!store) {
-            store = [[Store alloc] initWithName:storeName items:nil];
-            [self.dataSource addStore:store];
-        }
-        Item *item = [[Item alloc] initGenericItem];
-        [store addShoppingItems:@[item]];
-        
         ShoppingItemViewController *destVC = segue.destinationViewController;
-        destVC.storeName = store.name;
-        destVC.item = item;
         destVC.segueIdentifier = segue.identifier;
     }
 }

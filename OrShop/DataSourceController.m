@@ -79,36 +79,40 @@ static BOOL initilizingFromSharedInstance = NO;
     return self.storeNames;
 }
 
-// TODO: refactor for new classes
 - (void)addToStoreNamesUsed:(NSString *)storeName {
-    if (![self.storeNamesUsed containsString:storeName caseSensitive:NO] && ![storeName isEqualToString:[DataSourceController stringWithNoStoreName]]) {
+    if ([storeName isEqualToString:@""] || [storeName isEqualToString:[DataSourceController stringWithNoStoreName]]) return;
+    
+    if (![self.storeNamesUsed containsString:storeName caseSensitive:NO]) {
         self.storeNamesUsed = [[self.storeNamesUsed
                                 arrayByAddingObject:storeName]
                                sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
     }
 }
 
-// TODO: refactor for new classes
 - (void)addToItemNamesUsed:(NSString *)itemName {
-    if (![self.itemNamesUsed containsString:itemName caseSensitive:NO] && ![itemName isEqualToString:@""]) {
+    if ([itemName isEqualToString:@""]) return;
+    
+    if (![self.itemNamesUsed containsString:itemName caseSensitive:NO]) {
         self.itemNamesUsed = [[self.itemNamesUsed
                                arrayByAddingObject:itemName]
                               sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
     }
 }
 
-// TODO: refactor for new classes
 - (void)removeFromStoreNamesUsed:(NSString *)storeName {
-    if ([self.storeNamesUsed containsString:storeName caseSensitive:NO] && ![storeName isEqualToString:[DataSourceController stringWithNoStoreName]]) {
+    if ([storeName isEqualToString:@""] || [storeName isEqualToString:[DataSourceController stringWithNoStoreName]]) return;
+    
+    if ([self.storeNamesUsed containsString:storeName caseSensitive:NO]) {
         NSMutableArray *tempArray = [self.storeNamesUsed mutableCopy];
         [tempArray removeString:storeName caseSensitive:NO];
         self.storeNamesUsed = [tempArray copy];
     }
 }
 
-// TODO: refactor for new classes
 - (void)removeFromItemNamesUsed:(NSString *)itemName {
-    if ([self.itemNamesUsed containsString:itemName caseSensitive:NO] && ![itemName isEqualToString:@""]) {
+    if ([itemName isEqualToString:@""]) return;
+    
+    if ([self.itemNamesUsed containsString:itemName caseSensitive:NO]) {
         NSMutableArray *tempArray = [self.itemNamesUsed mutableCopy];
         [tempArray removeString:itemName caseSensitive:NO];
         self.itemNamesUsed = [tempArray copy];
