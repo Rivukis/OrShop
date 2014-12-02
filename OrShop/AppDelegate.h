@@ -15,3 +15,13 @@
 @property (strong, nonatomic) UIWindow *window;
 
 @end
+
+
+/*
+ FOUND BUGS:
+ 
+ - app crashes when moving all items from one list to another list
+    - operation completes as normal
+    - the crash happens because the table view reloading
+        - the number of cells removed/added don't match the amount datasource items removed/added
+*/
