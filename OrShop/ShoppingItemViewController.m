@@ -138,7 +138,9 @@
             
         } else if ([self.segueIdentifier isEqualToString:@"ToNewItem"]) {
             Store *store = [self.dataSource storeWithName:updatedStoreName];
-            if (!store) {
+            if (store) {
+                [store addShoppingItems:@[self.item]];
+            } else {
                 store = [[Store alloc] initWithName:self.preferredStoreTextField.text items:@[self.item]];
                 [self.dataSource addStore:store];
             }
